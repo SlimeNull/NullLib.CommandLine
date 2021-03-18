@@ -38,7 +38,7 @@ namespace NullLib.CommandLine
         {
             object[] paramsForCall = arguments.Select((v) => (object)v).ToArray();
 
-            NCommandAttribute attribute = method.GetCustomAttribute(typeof(NCommandAttribute)) as NCommandAttribute;
+            CommandAttribute attribute = method.GetCustomAttribute(typeof(CommandAttribute)) as CommandAttribute;
             if (attribute != null)
             {
                 var converters = attribute.ArgumentConverters;

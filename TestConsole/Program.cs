@@ -12,19 +12,25 @@ namespace TestConsole
     {
         class MyCommands
         {
-            [NCommand(typeof(IntegerConverter), typeof(IntegerConverter))]
-            public int Plus(int a, int b)
+            [Command(typeof(FloatConverter), typeof(FloatConverter))]      // 在这里添加属性以表示使用哪些转换器, 这里提供了一些基本类型的转换, 例如整数, 浮点数, 双精度浮点数, 枚举
+            public float Plus(float a, float b)
             {
                 return a + b;
+            }
+            [Command(typeof(FloatConverter), typeof(FloatConverter))]       // 转换器只需要继承 IArgumentConverter即可
+            public float Times(float a, float b)
+            {
+                return a * b;
             }
         }
         static void Main(string[] args)
         {
-            CommandObject<MyCommands> obj = new CommandObject<MyCommands>();
+            CommandObject<MyCommands> obj = new CommandObject<MyCommands>();       // 创建一个命令行对象
             while (true)
             {
-                string[] commandLine = ArgsParser.SplitArgs(Console.ReadLine());
-                obj.TryExecuteCommand(commandLine, out object result);
+                string[] commandLine = ArgsParser.SplitArgs(Console.ReadLine());     // 读取一行, 并分割
+
+                obj.TryExecuteCommand(commandLine, out object result);       // 尝试执行
                 Console.WriteLine($"Result: {result}");
             }
         }

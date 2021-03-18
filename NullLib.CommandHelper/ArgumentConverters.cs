@@ -1,24 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace NullLib.CommandLine
 {
-    [AttributeUsage(AttributeTargets.Method)]
-    public class NCommandAttribute : Attribute
-    {
-        IArgumentConverter[] argumentConverters;
-
-        public IArgumentConverter[] ArgumentConverters { get => argumentConverters; }
-        public NCommandAttribute(params Type[] arguConverters)
-        {
-            this.argumentConverters = arguConverters
-                .Select((v) => Activator.CreateInstance(v))
-                .OfType<IArgumentConverter>()
-                .ToArray();
-        }
-    }
 
     public interface IArgumentConverter
     {
@@ -65,8 +50,8 @@ namespace NullLib.CommandLine
                 return true;
             }
             catch
-            { 
-                result = default(T); 
+            {
+                result = default(T);
                 return false;
             }
         }
@@ -83,6 +68,19 @@ namespace NullLib.CommandLine
         }
     }
 
+    public class EmptyConverter : IArgumentConverter
+    {
+        public object Convert(string argument)
+        {
+            return argument;
+        }
+
+        public bool TryConvert(string argument, out object result)
+        {
+            result = argument;
+            return true;
+        }
+    }
     public class IntegerConverter : ArgumentConverter<int>
     {
         public override int Convert(string argument)

@@ -8,6 +8,7 @@
     <Product>NullLib.CommandLine</Product>
     <Description>命令行! 通过类似于CMD命令行的方式来调用 C# 中的函数吧, 有了这个库, 你可以轻松的实现上述功能.</Description>
     <Copyright>Copyright 2021 Null</Copyright>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
 </Project>
