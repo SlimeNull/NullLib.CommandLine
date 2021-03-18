@@ -12,12 +12,12 @@ namespace TestConsole
     {
         class MyCommands
         {
-            [Command(typeof(FloatConverter), typeof(FloatConverter))]      // 在这里添加属性以表示使用哪些转换器, 这里提供了一些基本类型的转换, 例如整数, 浮点数, 双精度浮点数, 枚举
+            [CommandOption(typeof(FloatConverter), typeof(FloatConverter))]      // 在这里添加属性以表示使用哪些转换器, 这里提供了一些基本类型的转换, 例如整数, 浮点数, 双精度浮点数, 枚举
             public float Plus(float a, float b)
             {
                 return a + b;
             }
-            [Command(typeof(FloatConverter), typeof(FloatConverter))]       // 转换器只需要继承 IArgumentConverter即可
+            [CommandOption(typeof(FloatConverter), typeof(FloatConverter))]       // 转换器只需要继承 IArgumentConverter即可
             public float Times(float a, float b)
             {
                 return a * b;

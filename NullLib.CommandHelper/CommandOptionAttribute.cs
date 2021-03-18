@@ -6,17 +6,20 @@ using System.Text;
 namespace NullLib.CommandLine
 {
     [AttributeUsage(AttributeTargets.Method)]
-    public class CommandAttribute : Attribute
+    public class CommandOptionAttribute : Attribute
     {
-        IArgumentConverter[] argumentConverters;
+        readonly IArgumentConverter[] argumentConverters;
 
         public IArgumentConverter[] ArgumentConverters { get => argumentConverters; }
-        public CommandAttribute(params Type[] arguConverters)
+        public CommandOptionAttribute(params Type[] arguConverters)
         {
             this.argumentConverters = arguConverters
                 .Select((v) => Activator.CreateInstance(v))
                 .OfType<IArgumentConverter>()
                 .ToArray();
+
+            if (this.argumentConverters.Length != arguConverters.Length)
+                throw new ArgumentOutOfRangeException("arguConverter", "Type must inherf from 'IArgymentConverter'");
         }
     }
 }

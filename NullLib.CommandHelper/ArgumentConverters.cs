@@ -40,7 +40,7 @@ namespace NullLib.CommandLine
     {
         public virtual T Convert(string argument)
         {
-            return default(T);
+            return default;
         }
         public virtual bool TryConvert(string argument, out T result)
         {
@@ -51,7 +51,7 @@ namespace NullLib.CommandLine
             }
             catch
             {
-                result = default(T);
+                result = default;
                 return false;
             }
         }
