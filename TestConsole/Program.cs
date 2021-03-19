@@ -30,7 +30,7 @@ namespace TestConsole
             {
                 string[] commandLine = ArgsParser.SplitArgs(Console.ReadLine());     // 读取一行, 并分割
 
-                obj.TryExecuteCommand(commandLine, out object result);       // 尝试执行
+                obj.TryExecuteCommand(commandLine, true, out object result);       // 尝试执行
                 Console.WriteLine($"Result: {result}");
             }
         }

@@ -54,7 +54,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NullLib.CommandHelper\NullLib.CommandLine.csproj">
+    <ProjectReference Include="..\NullLib.CommandLine\NullLib.CommandLine.csproj">
       <Project>{6e1d9a21-8a29-41a7-8c77-2f36c18a59de}</Project>
       <Name>NullLib.CommandLine</Name>
     </ProjectReference>
