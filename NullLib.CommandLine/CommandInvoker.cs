@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -11,11 +12,13 @@ namespace NullLib.CommandLine
         public static bool TryFormatArguments(ParameterInfo[] paramInfos, IArgument[] args, StringComparison stringComparison, out INamedArgument[] result)
         {
             result = null;
-            if (paramInfos.Length != args.Length)
+            if (paramInfos.Length < args.Length)
                 return false;
 
-            result = new INamedArgument[args.Length];
-            ParameterInfo lastParamInfo = null;
+            int normalParamIndex = 0;
+
+            result = new INamedArgument[paramInfos.Length];
+            ParameterInfo lastParamInfo;
             if (args.Length < 1 || (lastParamInfo = paramInfos[args.Length - 1]).GetCustomAttribute(typeof(ParamArrayAttribute)) == null)
             {
                 for (int i = 0, iend = args.Length; i < iend; i++)
@@ -41,12 +44,12 @@ namespace NullLib.CommandLine
                     else
                     {
                         bool assigned = false;
-                        for (int j = 0, end = args.Length; j < end; j++)
+                        for (int end = args.Length; normalParamIndex < end; normalParamIndex++)
                         {
-                            if (result[j] == null)
+                            if (result[normalParamIndex] == null)
                             {
-                                ParameterInfo curParamInfo = paramInfos[j];
-                                result[j] = new NamedArgument(curParamInfo.Name, args[j].Content);
+                                ParameterInfo curParamInfo = paramInfos[normalParamIndex];
+                                result[normalParamIndex] = new NamedArgument(curParamInfo.Name, args[normalParamIndex].Content);
                                 assigned = true;
                                 break;
                             }
@@ -84,12 +87,12 @@ namespace NullLib.CommandLine
                     else
                     {
                         bool assigned = false;
-                        for (int j = 0, end = args.Length; j < end; j++)
+                        for (int end = args.Length; normalParamIndex < end; normalParamIndex++)
                         {
-                            if (result[j] == null)
+                            if (result[normalParamIndex] == null)
                             {
-                                ParameterInfo curParamInfo = paramInfos[j];
-                                result[j] = new NamedArgument(curParamInfo.Name, args[j].Content);
+                                ParameterInfo curParamInfo = paramInfos[normalParamIndex];
+                                result[normalParamIndex] = new NamedArgument(curParamInfo.Name, args[normalParamIndex].Content);
                                 assigned = true;
                                 break;
                             }
@@ -100,7 +103,19 @@ namespace NullLib.CommandLine
                     }
                 }
 
-                result[result.Length - 1] = new NamedArgument() { Name = lastParamInfo.Name, ValueObj = arrparams.ToArray() };
+                result[args.Length - 1] = new NamedArgument() { Name = lastParamInfo.Name, ValueObj = arrparams.ToArray() };
+            }
+
+            for (int i = 0, iend = result.Length; i < iend; i++)
+            {
+                if (result[i] == null)
+                {
+                    result[i] = new NamedArgument(paramInfos[i].Name);
+                    if (paramInfos[i].HasDefaultValue)
+                        result[i].ValueObj = paramInfos[i].DefaultValue;
+                    else
+                        return false;
+                }
             }
 
             return true;
@@ -109,21 +124,22 @@ namespace NullLib.CommandLine
         {
             return TryFormatArguments(paramInfos, args, StringComparison.Ordinal, out result);
         }
-        public static bool TryConvertArguments(IArgumentConverter[] converters, INamedArgument[] arguments, out INamedArgument[] result)
+        public static bool TryConvertArguments(IArgumentConverter[] converters, ref INamedArgument[] args)
         {
-            result = null;
-            if (converters.Length != arguments.Length)
-                return false;
-
-            result = new INamedArgument[arguments.Length];
-            for (int i = 0, end = arguments.Length; i < end; i++)
+            IEnumerator enumerator = converters.GetEnumerator();
+            IArgumentConverter curConvtr = CommandAttribute.GetArgumentConverter<ArgumentConverter>();
+            for (int i = 0, end = args.Length; i < end; i++)
             {
-                INamedArgument curArgu = arguments[i];
-                IArgumentConverter curConvtr = converters[i];
-                if (!curConvtr.TryConvert(curArgu.Content, out var valueObj))
-                    return false;
-                curArgu.ValueObj = valueObj;
-                result[i] = curArgu;
+                if (enumerator.MoveNext())
+                    curConvtr = enumerator.Current as IArgumentConverter;
+                INamedArgument curArgu = args[i];
+                if (curArgu.ValueObj == null)
+                {
+                    if (!curConvtr.TryConvert(curArgu.Content, out var valueObj))
+                        return false;
+                    curArgu.ValueObj = valueObj;
+                    args[i] = curArgu;
+                }
             }
             return true;
         }
@@ -139,12 +155,12 @@ namespace NullLib.CommandLine
         {
             return FormatArguments(paramInfos, args, StringComparison.Ordinal);
         }
-        public static INamedArgument[] ConvertArguments(IArgumentConverter[] converters, INamedArgument[] arguments)
+        public static INamedArgument[] ConvertArguments(IArgumentConverter[] converters, INamedArgument[] args)
         {
-            if (TryConvertArguments(converters, arguments, out var result))
-                return result;
+            if (TryConvertArguments(converters, ref args))
+                return args;
             else
-                throw new ArgumentOutOfRangeException(nameof(arguments), "Arguments cannot be converted by specified converters");
+                throw new ArgumentOutOfRangeException(nameof(args), "Arguments cannot be converted by specified converters");
         }
 
         public static bool TryInvoke(MethodInfo method, ParameterInfo[] paramInfos, object instance, IArgument[] args, StringComparison stringComparison, out object result)
@@ -234,9 +250,9 @@ namespace NullLib.CommandLine
 
             if (!TryFormatArguments(paramInfos, args, stringComparison, out INamedArgument[] formatedArgs))
                 return false;
-            if (!TryConvertArguments(attribute.ArgumentConverters, formatedArgs, out INamedArgument[] convertedArgs))
+            if (!TryConvertArguments(attribute.ArgumentConverters, ref formatedArgs))
                 return false;
-            object[] methodParamObjs = GetArgumentObjects(convertedArgs);
+            object[] methodParamObjs = GetArgumentObjects(formatedArgs);
             try
             {
                 result = method.Invoke(instance, methodParamObjs);

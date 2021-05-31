@@ -8,22 +8,47 @@ namespace NullLib.CommandLine
     [AttributeUsage(AttributeTargets.Method)]
     public class CommandAttribute : Attribute
     {
+        readonly IArgumentConverter[] arguConverters;
+
+        private static Type IArgumentConverterType = typeof(IArgumentConverter);
         public static Dictionary<Type, IArgumentConverter> AllConverters;
 
-        readonly IArgumentConverter[] argumentConverters;
+        public static IArgumentConverter GetArgumentConverter<T>() where T : IArgumentConverter
+        {
+            Type type = typeof(T);
+            return AllConverters.TryGetValue(type, out var result) ? result : AllConverters[type] = Activator.CreateInstance<T>();
+        }
+        public static IArgumentConverter GetArgumentConverter(Type type)
+        {
+            if (AllConverters.TryGetValue(type, out var obj))
+            {
+                return obj;
+            }
+            else
+            {
+                if (IArgumentConverterType.IsAssignableFrom(type))
+                    return AllConverters[type] = Activator.CreateInstance(type) as IArgumentConverter;
+                else
+                    throw new ArgumentOutOfRangeException(nameof(type), $"Type must be assignable to {nameof(IArgumentConverter)}.");
+            }
+        }
 
-        public IArgumentConverter[] ArgumentConverters { get => argumentConverters; }
+        public IArgumentConverter[] ArgumentConverters { get => arguConverters; }
         public CommandAttribute(params Type[] arguConverters)
         {
             if (AllConverters == null)
                 AllConverters = new Dictionary<Type, IArgumentConverter>();
 
-            this.argumentConverters = arguConverters
-                .Select((v) => AllConverters.TryGetValue(v, out var obj) ? obj : AllConverters[v] = Activator.CreateInstance(v) as IArgumentConverter)
-                .ToArray();
-
-            if (this.argumentConverters.Length != arguConverters.Length)
-                throw new ArgumentOutOfRangeException(nameof(arguConverters), "Type must inherf from 'IArgymentConverter'");
+            try
+            {
+                this.arguConverters = new IArgumentConverter[arguConverters.Length];
+                for (int i = 0, end = arguConverters.Length; i < end; i++)
+                    this.arguConverters[i] = GetArgumentConverter(arguConverters[i]);
+            }
+            catch (ArgumentOutOfRangeException e)
+            {
+                throw new ArgumentOutOfRangeException(nameof(arguConverters), $"Type must be assignable to {nameof(IArgumentConverter)}.");
+            }
 
 #if DEBUG
             //Console.WriteLine("AllConvertersCount:" + AllConverters.Count);

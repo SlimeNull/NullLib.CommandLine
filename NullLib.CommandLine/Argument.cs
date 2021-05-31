@@ -1,4 +1,6 @@
-﻿namespace NullLib.CommandLine
+﻿using System.Text.RegularExpressions;
+
+namespace NullLib.CommandLine
 {
     public interface IArgument
     {
@@ -13,12 +15,12 @@
     {
         bool TryParse(ref int index, ref ArgumentSegment[] arguments, out IArgument result);
     }
-    public struct StringArgument : IArgument
+    public struct Argument : IArgument
     {
         public string Content { get; set; }
         public object ValueObj { get; set; }
 
-        public StringArgument(string content)
+        public Argument(string content)
         {
             Content = content;
             ValueObj = null;
@@ -30,6 +32,12 @@
         public string Content { get; set; }
         public object ValueObj { get; set; }
 
+        public NamedArgument(string name)
+        {
+            Name = name;
+            Content = string.Empty;
+            ValueObj = null;
+        }
         public NamedArgument(string name, string content)
         {
             Name = name;
@@ -52,8 +60,59 @@
     {
         public bool TryParse(ref int index, ref ArgumentSegment[] arguments, out IArgument result)
         {
-            result = new StringArgument(arguments[index++].Content);
+            result = new Argument(arguments[index++].Content);
             return true;
+        }
+    }
+    public class IdentifierArgumentParser : IArgumentParser
+    {
+        public bool IsIdentifier(string str)
+        {
+            if (str.Length < 1)
+                return false;
+
+            char curChar = str[0];
+            if (char.IsLetter(curChar) || curChar.Equals('_'))
+            {
+                bool result = true;
+                for (int i = 1, end = str.Length; i < end; i++)
+                {
+                    curChar = str[i];
+                    result &= char.IsLetterOrDigit(curChar) || curChar.Equals('_');
+                }
+                return result;
+            }
+            return false;
+        }
+        public bool TryParse(ref int index, ref ArgumentSegment[] arguments, out IArgument result)
+        {
+            result = null;
+            ArgumentSegment curSegment = arguments[index];
+            if (curSegment.Quoted)
+                return false;
+            if (!IsIdentifier(curSegment.Content))
+                return false;
+            result = new Argument(curSegment.Content);
+            index++;
+            return true;
+        }
+    }
+    public class AbsouteStringArgumentParser : IArgumentParser
+    {
+        public bool TryParse(ref int index, ref ArgumentSegment[] arguments, out IArgument result)
+        {
+            ArgumentSegment curSegment = arguments[index];
+            if (curSegment.Quoted)
+            {
+                result = new Argument(curSegment.Content);
+                index++;
+                return true;
+            }
+            else
+            {
+                result = null;
+                return false;
+            }
         }
     }
     public class FieldArgumentParser : IArgumentParser
