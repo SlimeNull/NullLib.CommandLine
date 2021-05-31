@@ -15,7 +15,7 @@ namespace NullLib.CommandLine
         new T Convert(string argument);
         bool TryConvert(string argument, out T result);
     }
-    public abstract class ArgumentConverter : IArgumentConverter
+    public class ArgumentConverter : IArgumentConverter
     {
         public virtual object Convert(string argument)
         {
@@ -36,7 +36,7 @@ namespace NullLib.CommandLine
             }
         }
     }
-    public abstract class ArgumentConverter<T> : IArgumentConverter<T>
+    public class ArgumentConverter<T> : IArgumentConverter<T>
     {
         public virtual T Convert(string argument)
         {

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -8,29 +10,39 @@ namespace NullLib.CommandLine
     {
         readonly T instance;
         MethodInfo[] methods;
-        string[] methodNames;
-        string[] methodUpperNames;
+        ParameterInfo[][] paramInfos;
+        CommandAttribute[] attributes;
 
         private void InitializeInstance()
         {
-            if (instance != null)
+            List<MethodInfo> methods = new List<MethodInfo>();
+            List<ParameterInfo[]> paramInfos = new List<ParameterInfo[]>();
+            List<CommandAttribute> attributes = new List<CommandAttribute>();
+
+            foreach (var method in typeof(T).GetMethods())
             {
-                this.methods = typeof(T).GetMethods();
-                this.methodNames = methods.Select((v) => v.Name.ToString()).ToArray();
-                this.methodUpperNames = this.methods.Select((v) => v.Name.ToUpper()).ToArray();
+                CommandAttribute attribute = method.GetCustomAttribute<CommandAttribute>();
+                if (attribute != null)
+                {
+                    ParameterInfo[] _paramInfos = method.GetParameters();
+                    methods.Add(method);
+                    attributes.Add(attribute);
+                    paramInfos.Add(_paramInfos);
+                }
             }
+
+            this.methods = methods.ToArray();
+            this.attributes = attributes.ToArray();
+            this.paramInfos = paramInfos.ToArray();
         }
 
-        public CommandObject()
-        {
-            this.instance = Activator.CreateInstance<T>();
-
-            InitializeInstance();
-        }
+        public CommandObject() :
+            this(Activator.CreateInstance<T>()) { }
         public CommandObject(T instance)
         {
+            if (instance == null)
+                throw new ArgumentNullException(nameof(instance));
             this.instance = instance;
-
             InitializeInstance();
         }
 
@@ -62,188 +74,44 @@ namespace NullLib.CommandLine
 
             return paramsForCalling;
         }
-        public static object[] ConvertArguments(MethodInfo method, object[] arguments)
-        {
-            object[] result = new object[arguments.Length];
-            ParameterInfo[] paramInfos = method.GetParameters();
 
-            if (method.GetCustomAttribute(typeof(CommandOptionAttribute)) is CommandOptionAttribute attribute)
-            {
-                var converters = attribute.ArgumentConverters;
-                for (int i = 0, len = converters.Length; i < len; i++)
-                {
-                    Type objType = arguments[i].GetType();
-                    if (paramInfos[i].ParameterType != objType)
-                        if (objType == typeof(string))
-                            result[i] = converters[i].Convert(arguments[i] as string);
-                        else
-                            throw new ArgumentOutOfRangeException("arguments", $"Object of type 'string' is requeired. Index: {i}");
-                    else
-                        result[i] = arguments;
-                }
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException("method", "Method must has attribute 'SetCommand'.");
-            }
-
-            return result;
-        }
-        public static object ExecuteCommand(T instance, MethodInfo method, string[] arguments)
+        public object ExecuteCommand(IArgumentParser[] parsers, string cmdline, bool ignoreCases)
         {
-            object[] paramsForCalling = ConvertArguments(method, arguments);
-            return method.Invoke(instance, paramsForCalling);
+            ArgumentSegment[] cmdinfo = CommandParser.SplitCommandLine(cmdline);
+            CommandParser.SplitCommandInfo(cmdinfo, out var cmdname, out var arguments);
+            IArgument[] args = CommandParser.ParseArguments(parsers, arguments);
+            return CommandInvoker.Invoke(methods, paramInfos, attributes, instance, cmdname, args, ignoreCases ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
         }
-        public static object ExecuteCommand(T instance, MethodInfo method, object arguments)
+        public object ExecuteCommand(IArgumentParser[] parsers, string cmdline)
         {
-            object[] paramsForCalling = GetArguments(method, arguments);
-            paramsForCalling = ConvertArguments(method, paramsForCalling);
-            return method.Invoke(instance, paramsForCalling);
+            return ExecuteCommand(parsers, cmdline, false);
         }
-
-        public bool TryGetMethodInfo(string methodName, bool ignoreCases, out MethodInfo result)
+        public object ExecuteCommand(string cmdline, bool ignoreCases)
         {
-            string[] nameToSearch;
-
-            if (ignoreCases)
-            {
-                methodName = methodName.ToUpper();
-                nameToSearch = methodUpperNames;
-            }
-            else
-            {
-                nameToSearch = methodNames;
-            }
-
-            result = null;
-            for (int i = 0, len = methods.Length; i < len; i++)
-                if (string.Equals(methodName, nameToSearch[i]))
-                    result = methods[i];
-
-            return result != null;
+            return ExecuteCommand(CommandParser.DefaultParsers, cmdline, ignoreCases);
         }
-
-        public object ExecuteCommand(string methodName, string[] arguments, bool ignoreCases)
+        public object ExecuteCommand(string cmdline)
         {
-            if (TryGetMethodInfo(methodName, ignoreCases, out MethodInfo toCall))
-                return ExecuteCommand(instance, toCall, arguments);
-
-            throw new EntryPointNotFoundException("Method not found.");
+            return ExecuteCommand(CommandParser.DefaultParsers, cmdline, false);
         }
-        public object ExecuteCommand(string methodName, string[] arguments)
+        public bool TryExecuteCommand(IArgumentParser[] parsers, string cmdline, bool ignoreCases, out object result)
         {
-            return ExecuteCommand(methodName, arguments, false);
+            ArgumentSegment[] cmdinfo = CommandParser.SplitCommandLine(cmdline);
+            CommandParser.SplitCommandInfo(cmdinfo, out var cmdname, out var arguments);
+            IArgument[] args = CommandParser.ParseArguments(parsers, arguments);
+            return CommandInvoker.TryInvoke(methods, paramInfos, attributes, instance, cmdname, args, ignoreCases ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal, out result);
         }
-        public object ExecuteCommand(string methodName, object arguments, bool ignoreCases)
+        public bool TryExecuteCommand(IArgumentParser[] parsers, string cmdline, out object result)
         {
-            if (TryGetMethodInfo(methodName, ignoreCases, out MethodInfo toCall))
-                return ExecuteCommand(instance, toCall, arguments);
-
-            throw new EntryPointNotFoundException("Method not found.");
+            return TryExecuteCommand(parsers, cmdline, false, out result);
         }
-        public object ExecuteCommand(string methodName, object arguments)
+        public bool TryExecuteCommand(string cmdline, bool ignoreCases, out object result)
         {
-            return ExecuteCommand(methodName, arguments, false);
+            return TryExecuteCommand(CommandParser.DefaultParsers, cmdline, ignoreCases, out result);
         }
-        public object ExecuteCommand(string[] commandLine, bool ignoreCases)
+        public bool TryExecuteCommand(string cmdline, out object result)
         {
-            if (commandLine.Length < 1)
-                throw new ArgumentOutOfRangeException("commandLine", "Length of this array must greater than 0");
-
-            string methodName = commandLine[0];
-            string[] arguments = new string[commandLine.Length - 1];
-            Array.Copy(commandLine, 1, arguments, 0, arguments.Length);
-
-            return ExecuteCommand(methodName, arguments, ignoreCases);
-        }
-        public object ExecuteCommand(string[] commandLine)
-        {
-            return ExecuteCommand(commandLine, false);
-        }
-        public object ExecuteCommand(MethodInfo method, string[] arguments)
-        {
-            return ExecuteCommand(instance, method, arguments);
-        }
-        public object ExecuteCommand(MethodInfo method, object arguments)
-        {
-            return ExecuteCommand(instance, method, arguments);
-        }
-        public bool TryExecuteCommand(string methodName, string[] arguments, bool ignoreCases, out object result)
-        {
-            try
-            {
-                result = ExecuteCommand(methodName, arguments, ignoreCases);
-                return true;
-            }
-            catch
-            {
-                result = null;
-                return false;
-            }
-        }
-        public bool TryExecuteCommand(string methodName, string[] arguments,out object result)
-        {
-            return TryExecuteCommand(methodName, arguments, false, out result);
-        }
-        public bool TryExecuteCommand(string methodName, object arguments, bool ignoreCases, out object result)
-        {
-            try
-            {
-                result = ExecuteCommand(methodName, arguments, ignoreCases);
-                return true;
-            }
-            catch
-            {
-                result = null;
-                return false;
-            }
-        }
-        public bool TryExecuteCommand(string methodName, object arguments, out object result)
-        {
-            return TryExecuteCommand(methodName, arguments, false, out result);
-        }
-        public bool TryExecuteCommand(string[] commandLine, bool ignoreCases, out object result)
-        {
-            try
-            {
-                result = ExecuteCommand(commandLine, ignoreCases);
-                return true;
-            }
-            catch
-            {
-                result = null;
-                return false;
-            }
-        }
-        public bool TryExecuteCommand(string[] commandLine, out object result)
-        {
-            return TryExecuteCommand(commandLine, false, out result);
-        }
-        public bool TryExecuteCommand(MethodInfo method, string[] arguments, out object result)
-        {
-            try
-            {
-                result = ExecuteCommand(method, arguments);
-                return true;
-            }
-            catch
-            {
-                result = null;
-                return false;
-            }
-        }
-        public bool TryExecuteCommand(MethodInfo method, object arguments, out object result)
-        {
-            try
-            {
-                result = ExecuteCommand(method, arguments);
-                return true;
-            }
-            catch
-            {
-                result = null;
-                return false;
-            }
+            return TryExecuteCommand(CommandParser.DefaultParsers, cmdline, false, out result);
         }
     }
 }
