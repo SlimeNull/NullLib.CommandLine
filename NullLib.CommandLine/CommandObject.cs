@@ -13,6 +13,8 @@ namespace NullLib.CommandLine
         ParameterInfo[][] paramInfos;
         CommandAttribute[] attributes;
 
+        public T TargetInstance => instance;
+
         private void InitializeInstance()
         {
             List<MethodInfo> methods = new List<MethodInfo>();
@@ -75,12 +77,20 @@ namespace NullLib.CommandLine
             return paramsForCalling;
         }
 
+        public object ExecuteCommand(IArgumentParser[] parsers, CommandLineSegment[] cmdline, bool ignoreCases)
+        {
+            CommandParser.SplitCommandInfo(cmdline, out var cmdname, out var arguments);
+            IArgument[] args = CommandParser.ParseArguments(parsers, arguments);
+            return CommandInvoker.Invoke(methods, paramInfos, attributes, instance, cmdname, args, ignoreCases ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+        }
+        public object ExecuteCommand(IArgumentParser[] parsers, CommandLineSegment[] cmdline)
+        {
+            return ExecuteCommand(parsers, cmdline, false);
+        }
         public object ExecuteCommand(IArgumentParser[] parsers, string cmdline, bool ignoreCases)
         {
             CommandLineSegment[] cmdinfo = CommandParser.SplitCommandLine(cmdline);
-            CommandParser.SplitCommandInfo(cmdinfo, out var cmdname, out var arguments);
-            IArgument[] args = CommandParser.ParseArguments(parsers, arguments);
-            return CommandInvoker.Invoke(methods, paramInfos, attributes, instance, cmdname, args, ignoreCases ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+            return ExecuteCommand(parsers, cmdinfo, ignoreCases);
         }
         public object ExecuteCommand(IArgumentParser[] parsers, string cmdline)
         {

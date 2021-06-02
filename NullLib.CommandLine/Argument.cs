@@ -67,7 +67,7 @@ namespace NullLib.CommandLine
             this.valueObj = content;
         }
     }
-    public class ArgumentParser : IArgumentParser
+    public class ArguParser : IArgumentParser
     {
         public bool TryParse(ref int index, ref CommandLineSegment[] arguments, out IArgument result)
         {
@@ -75,7 +75,7 @@ namespace NullLib.CommandLine
             return true;
         }
     }
-    public class IdentifierArgumentParser : IArgumentParser
+    public class IdentifierArguParser : IArgumentParser
     {
         public bool IsIdentifier(string str)
         {
@@ -108,7 +108,7 @@ namespace NullLib.CommandLine
             return true;
         }
     }
-    public class StringArgumentParser : IArgumentParser
+    public class StringArguParser : IArgumentParser
     {
         public bool TryParse(ref int index, ref CommandLineSegment[] arguments, out IArgument result)
         {
@@ -126,16 +126,16 @@ namespace NullLib.CommandLine
             }
         }
     }
-    public class FieldArgumentParser : IArgumentParser
+    public class FieldArguParser : IArgumentParser
     {
         private char triggerChar;
 
         public char TriggerChar { get => triggerChar; set => triggerChar = value; }
-        public FieldArgumentParser()
+        public FieldArguParser()
         {
             TriggerChar = '=';
         }
-        public FieldArgumentParser(char triggerChar)
+        public FieldArguParser(char triggerChar)
         {
             TriggerChar = triggerChar;
         }
@@ -172,16 +172,16 @@ namespace NullLib.CommandLine
             return false;
         }
     }
-    public class PropertyArgumentParser : IArgumentParser
+    public class PropertyArguParser : IArgumentParser
     {
         private string triggerString;
 
         public string TriggerString { get => triggerString; set => triggerString = value; }
-        public PropertyArgumentParser()
+        public PropertyArguParser()
         {
             this.TriggerString = "-";
         }
-        public PropertyArgumentParser(string triggerString)
+        public PropertyArguParser(string triggerString)
         {
             this.TriggerString = triggerString;
         }

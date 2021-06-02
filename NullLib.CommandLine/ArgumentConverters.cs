@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Globalization;
 using System.Text;
 
@@ -26,12 +27,12 @@ namespace NullLib.CommandLine
         private static Type IArgumentConverterType = typeof(IArgumentConverter);
         public static Dictionary<Type, IArgumentConverter> AllConverters = new Dictionary<Type, IArgumentConverter>();
 
-        public static IArgumentConverter GetArgumentConverter<T>() where T : IArgumentConverter
+        public static IArgumentConverter GetConverter<T>() where T : IArgumentConverter
         {
             Type type = typeof(T);
             return AllConverters.TryGetValue(type, out var result) ? result : AllConverters[type] = Activator.CreateInstance<T>();
         }
-        public static IArgumentConverter GetArgumentConverter(Type type)
+        public static IArgumentConverter GetConverter(Type type)
         {
             if (type == null)
                 return null;
@@ -287,6 +288,17 @@ namespace NullLib.CommandLine
             return double.TryParse(argument, out result);
         }
     }
+    public class BigIntArguConverter : ArgumentConverter<BigInteger>
+    {
+        public override BigInteger Convert(string argument)
+        {
+            return BigInteger.Parse(argument);
+        }
+        public override bool TryConvert(string argument, out BigInteger result)
+        {
+            return BigInteger.TryParse(argument, out result);
+        }
+    }
     public class DecimalArguConverter : ArgumentConverter<decimal>
     {
         public override decimal Convert(string argument)
@@ -314,7 +326,7 @@ namespace NullLib.CommandLine
         IArgumentConverter converter;
         public ForeachArguConverter()
         {
-            converter = ArgumentConverterManager.GetArgumentConverter<TConverter>() as IArgumentConverter;
+            converter = ArgumentConverterManager.GetConverter<TConverter>() as IArgumentConverter;
         }
         public override object Convert(string argument)
         {

@@ -133,7 +133,7 @@ namespace NullLib.CommandLine
         public static bool TryConvertArguments(ParameterInfo[] paramInfos, IArgumentConverter[] converters, ref IArgument[] args)
         {
             IEnumerator enumerator = converters.GetEnumerator();
-            IArgumentConverter curConvtr = ArgumentConverterManager.GetArgumentConverter<ArguConverter>();
+            IArgumentConverter curConvtr = ArgumentConverterManager.GetConverter<ArguConverter>();
             for (int i = 0, end = args.Length; i < end; i++)
             {
                 if (enumerator.MoveNext() && enumerator.Current != null)

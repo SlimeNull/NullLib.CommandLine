@@ -16,7 +16,7 @@ namespace NullLib.CommandLine
             {
                 this.arguConverters = new IArgumentConverter[arguConverters.Length];
                 for (int i = 0, end = arguConverters.Length; i < end; i++)
-                    this.arguConverters[i] = ArgumentConverterManager.GetArgumentConverter(arguConverters[i]);
+                    this.arguConverters[i] = ArgumentConverterManager.GetConverter(arguConverters[i]);
             }
             catch (ArgumentOutOfRangeException)
             {
