@@ -13,42 +13,45 @@ namespace TestConsole
     {
         class MyCommands
         {
-            [Command(typeof(FloatConverter))]      // 在这里添加属性以表示使用哪些转换器, 这里提供了一些基本类型的转换, 例如整数, 浮点数, 双精度浮点数, 枚举
-            public float Plus(float a, float b = 5)
+            [Command(typeof(FloatArguConverter), typeof(FloatArguConverter))]      // the build-in ArgumentConverter in NullLib.CommandLine
+            public float Plus(float a, float b)
             {
                 return a + b;
             }
-            [Command(typeof(FloatConverter))]
-            public float Plus(float a, float b = 5, float c = 6)
-            {
-                return a + b + c;
-            }
-            [Command(typeof(FloatConverter))]       // 转换器只需要继承 IArgumentConverter即可
+            [Command(typeof(FloatArguConverter))]        // if the following converters is same as the last one, you can ignore these
             public float Mul(float a, float b)
             {
                 return a * b;
             }
-            [Command(typeof(FloatConverter))]
-            public float Sub(float a, float b)
+            [Command(typeof(DoubleArguConverter))]
+            public double Log(double n, double newBase = Math.E)    // you can also use optional parameter
             {
-                return a - b;
+                return Math.Log(n, newBase);
             }
-            [Command(typeof(FloatConverter))]
-            public float Div(float a, float b)
+            [Command(typeof(ForeachArguConverter<FloatArguConverter>))]   // each string of array will be converted by FloatConverter
+            public float Sum(params float[] nums)                 // variable length parameter method is supported
             {
-                return a / b;
+                float result = 0;
+                foreach (var i in nums)
+                    result += i;
+                return result;
             }
-            [Command(typeof(FloatConverter), null, null, typeof(ArgumentConverter))]
-            public float Test(float a, float b, float c, string qwq)
+            [Command(typeof(ArguConverter))]        // if don't need to do any convertion, specify an 'ArgumentConverter'
+            public void Print(string txt)
             {
-                Console.WriteLine(qwq);
-                return a + b + c;
+                Console.WriteLine(txt);
             }
-            [Command(typeof(ForeachConverter<FloatConverter>))]
-            public float Adds(params float[] nums)
+            [Command]                                   // the defualt converter is 'ArgumentConverter', you can ignore these
+            public bool StringEquals(string txt1, string txt2)   // or specify 'null' to use the last converter (here is ArgumentConverter)
             {
-                return nums.Sum();
+                return txt1.Equals(txt2);
             }
+            [Command(typeof(EnumArguConverter<ConsoleColor>))]   // EnumConverter helps convert string to Enum type automatically.
+            public void SetBackground(ConsoleColor color)
+            {
+                Console.BackgroundColor = color;
+            }
+
         }
 
         static void Main(string[] args)
@@ -58,7 +61,7 @@ namespace TestConsole
             {
                 new PropertyArgumentParser("-"),
                 new FieldArgumentParser(':'),
-                new StringArgumentParser(),
+                new ArgumentParser(),
             };
 
             Console.WriteLine("Easy command. Copyright 2021 Null.\n");

@@ -102,7 +102,6 @@ namespace NullLib.CommandLine
         {
             return default;
         }
-
         public virtual TTarget Convert(object argument)
         {
             return Convert(argument as string);
@@ -132,7 +131,6 @@ namespace NullLib.CommandLine
         {
             return TryConvert(argument as string, out result);
         }
-
         public virtual bool TryConvert(object argument, out object result)
         {
             if (TryConvert(argument, out TTarget rst))
@@ -151,14 +149,52 @@ namespace NullLib.CommandLine
         {
             return Convert(argument);
         }
-
         object IArgumentConverter.Convert(object argument)
         {
             return Convert(argument);
         }
     }
 
-    public class ByteConverter : ArgumentConverter<byte>
+    public class ArguConverter : ArgumentConverter<string>
+    {
+        public override string Convert(string argument)
+        {
+            return argument;
+        }
+        public override bool TryConvert(string argument, out string result)
+        {
+            result = argument;
+            return true;
+        }
+    }
+
+    public class BoolArguConverter : ArgumentConverter<bool>
+    {
+        public override bool Convert(string argument)
+        {
+            return argument.Equals("true", StringComparison.OrdinalIgnoreCase) ? true :
+                argument.Equals("false", StringComparison.OrdinalIgnoreCase) ? false :
+                throw new ArgumentOutOfRangeException(nameof(argument), "Cannot convert argument");
+        }
+        public override bool TryConvert(string argument, out bool result)
+        {
+            if (argument.Equals("true", StringComparison.OrdinalIgnoreCase))
+            {
+                result = true;
+                return true;
+            }
+            else if (argument.Equals("false", StringComparison.OrdinalIgnoreCase))
+            {
+                result = false;
+                return true;
+            }
+            {
+                result = false;
+                return false;
+            }
+        }
+    }
+    public class ByteArguConverter : ArgumentConverter<byte>
     {
         public override byte Convert(string argument)
         {
@@ -169,7 +205,34 @@ namespace NullLib.CommandLine
             return byte.TryParse(argument, out result);
         }
     }
-    public class ShortConverter : ArgumentConverter<short>
+    public class CharArguConverter : ArgumentConverter<char>
+    {
+        public override char Convert(string argument)
+        {
+            if (argument.Length == 1)
+            {
+                return argument[0];
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(argument), "Cannot convert argument");
+            }
+        }
+        public override bool TryConvert(string argument, out char result)
+        {
+            if (argument.Length == 1)
+            {
+                result = argument[0];
+                return true;
+            }
+            else
+            {
+                result = char.MinValue;
+                return false;
+            }
+        }
+    }
+    public class ShortArguConverter : ArgumentConverter<short>
     {
         public override short Convert(string argument)
         {
@@ -180,7 +243,7 @@ namespace NullLib.CommandLine
             return short.TryParse(argument, out result);
         }
     }
-    public class IntegerConverter : ArgumentConverter<int>
+    public class IntArguConverter : ArgumentConverter<int>
     {
         public override int Convert(string argument)
         {
@@ -191,7 +254,7 @@ namespace NullLib.CommandLine
             return int.TryParse(argument, out result);
         }
     }
-    public class LongConverter : ArgumentConverter<long>
+    public class LongArguConverter : ArgumentConverter<long>
     {
         public override long Convert(string argument)
         {
@@ -202,7 +265,7 @@ namespace NullLib.CommandLine
             return long.TryParse(argument, out result);
         }
     }
-    public class FloatConverter : ArgumentConverter<float>
+    public class FloatArguConverter : ArgumentConverter<float>
     {
         public override float Convert(string argument)
         {
@@ -213,7 +276,7 @@ namespace NullLib.CommandLine
             return float.TryParse(argument, out result);
         }
     }
-    public class DoubleConverter : ArgumentConverter<double>
+    public class DoubleArguConverter : ArgumentConverter<double>
     {
         public override double Convert(string argument)
         {
@@ -224,7 +287,7 @@ namespace NullLib.CommandLine
             return double.TryParse(argument, out result);
         }
     }
-    public class DecimalConverter : ArgumentConverter<decimal>
+    public class DecimalArguConverter : ArgumentConverter<decimal>
     {
         public override decimal Convert(string argument)
         {
@@ -235,7 +298,7 @@ namespace NullLib.CommandLine
             return decimal.TryParse(argument, out result);
         }
     }
-    public class EnumConverter<T> : ArgumentConverter<T> where T : struct
+    public class EnumArguConverter<T> : ArgumentConverter<T> where T : struct
     {
         public override T Convert(string argument)
         {
@@ -246,10 +309,10 @@ namespace NullLib.CommandLine
             return Enum.TryParse(argument, out result);
         }
     }
-    public class ForeachConverter<TConverter> : ArgumentConverter where TConverter : IArgumentConverter
+    public class ForeachArguConverter<TConverter> : ArgumentConverter where TConverter : IArgumentConverter
     {
         IArgumentConverter converter;
-        public ForeachConverter()
+        public ForeachArguConverter()
         {
             converter = ArgumentConverterManager.GetArgumentConverter<TConverter>() as IArgumentConverter;
         }
@@ -317,6 +380,19 @@ namespace NullLib.CommandLine
                 result = null;
                 return false;
             }
+        }
+    }
+
+    public class CharArrayArguConverter : ArgumentConverter<char[]>
+    {
+        public override char[] Convert(string argument)
+        {
+            return argument.ToCharArray();
+        }
+        public override bool TryConvert(string argument, out char[] result)
+        {
+            result = argument.ToCharArray();
+            return true;
         }
     }
 }

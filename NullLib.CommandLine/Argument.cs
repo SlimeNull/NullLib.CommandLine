@@ -15,6 +15,17 @@ namespace NullLib.CommandLine
     {
         bool TryParse(ref int index, ref CommandLineSegment[] arguments, out IArgument result);
     }
+    public class CommandLineSegment
+    {
+        public bool Quoted;
+        public string Content;
+
+        public CommandLineSegment(string content, bool quoted)
+        {
+            Content = content;
+            Quoted = quoted;
+        }
+    }
     public class Argument : IArgument
     {
         private string content;
@@ -56,18 +67,7 @@ namespace NullLib.CommandLine
             this.valueObj = content;
         }
     }
-    public class CommandLineSegment
-    {
-        public bool Quoted;
-        public string Content;
-
-        public CommandLineSegment(string content, bool quoted)
-        {
-            Content = content;
-            Quoted = quoted;
-        }
-    }
-    public class StringArgumentParser : IArgumentParser
+    public class ArgumentParser : IArgumentParser
     {
         public bool TryParse(ref int index, ref CommandLineSegment[] arguments, out IArgument result)
         {
@@ -108,7 +108,7 @@ namespace NullLib.CommandLine
             return true;
         }
     }
-    public class AbsouteStringArgumentParser : IArgumentParser
+    public class StringArgumentParser : IArgumentParser
     {
         public bool TryParse(ref int index, ref CommandLineSegment[] arguments, out IArgument result)
         {
