@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Globalization;
 using System.Text;
+using System.Reflection;
 
 namespace NullLib.CommandLine
 {
@@ -96,7 +97,8 @@ namespace NullLib.CommandLine
     }
     public abstract class ArgumentConverter<TTarget> : IArgumentConverter<TTarget>
     {
-        private Type targetType = typeof(TTarget);
+        private static Type targetType = typeof(TTarget);
+
         public Type TargetType { get => targetType; }
 
         public virtual TTarget Convert(string argument)
@@ -323,10 +325,13 @@ namespace NullLib.CommandLine
     }
     public class ForeachArguConverter<TConverter> : ArgumentConverter where TConverter : IArgumentConverter
     {
-        IArgumentConverter converter;
+        public override Type TargetType => targetType; IArgumentConverter converter;
+        private readonly Type targetType;
+
         public ForeachArguConverter()
         {
-            converter = ArgumentConverterManager.GetConverter<TConverter>() as IArgumentConverter;
+            converter = ArgumentConverterManager.GetConverter<TConverter>();
+            targetType = converter.TargetType.MakeArrayType();
         }
         public override object Convert(string argument)
         {
