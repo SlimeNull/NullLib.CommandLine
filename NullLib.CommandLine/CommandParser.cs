@@ -8,8 +8,8 @@ namespace NullLib.CommandLine
     {
         public static IArgumentParser[] DefaultParsers { get; private set; } = new IArgumentParser[]
         {
-            new FieldArgumentParser(),
-            new ArgumentParser()
+            new FieldArguParser(),
+            new ArguParser()
         };
 
         public static CommandLineSegment[] SplitCommandLine(string str)

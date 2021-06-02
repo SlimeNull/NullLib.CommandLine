@@ -59,9 +59,9 @@ namespace TestConsole
             CommandObject<MyCommands> obj = new CommandObject<MyCommands>();       // 创建一个命令行对象
             IArgumentParser[] parsers = new IArgumentParser[]
             {
-                new PropertyArgumentParser("-"),
-                new FieldArgumentParser(':'),
-                new ArgumentParser(),
+                new PropertyArguParser("-"),
+                new FieldArguParser(':'),
+                new ArguParser(),
             };
 
             Console.WriteLine("Easy command. Copyright 2021 Null.\n");
