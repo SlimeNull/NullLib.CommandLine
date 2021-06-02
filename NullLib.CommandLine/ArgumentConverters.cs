@@ -50,7 +50,7 @@ namespace NullLib.CommandLine
         }
     }
 
-    public class ArgumentConverter : IArgumentConverter
+    public abstract class ArgumentConverter : IArgumentConverter
     {
         private Type targetType = typeof(string);
         public virtual Type TargetType { get => targetType; }
@@ -93,7 +93,7 @@ namespace NullLib.CommandLine
             }
         }
     }
-    public class ArgumentConverter<TTarget> : IArgumentConverter<TTarget>
+    public abstract class ArgumentConverter<TTarget> : IArgumentConverter<TTarget>
     {
         private Type targetType = typeof(TTarget);
         public Type TargetType { get => targetType; }
