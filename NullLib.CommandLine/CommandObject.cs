@@ -77,7 +77,7 @@ namespace NullLib.CommandLine
 
         public object ExecuteCommand(IArgumentParser[] parsers, string cmdline, bool ignoreCases)
         {
-            ArgumentSegment[] cmdinfo = CommandParser.SplitCommandLine(cmdline);
+            CommandLineSegment[] cmdinfo = CommandParser.SplitCommandLine(cmdline);
             CommandParser.SplitCommandInfo(cmdinfo, out var cmdname, out var arguments);
             IArgument[] args = CommandParser.ParseArguments(parsers, arguments);
             return CommandInvoker.Invoke(methods, paramInfos, attributes, instance, cmdname, args, ignoreCases ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
@@ -94,12 +94,20 @@ namespace NullLib.CommandLine
         {
             return ExecuteCommand(CommandParser.DefaultParsers, cmdline, false);
         }
-        public bool TryExecuteCommand(IArgumentParser[] parsers, string cmdline, bool ignoreCases, out object result)
+        public bool TryExecuteCommand(IArgumentParser[] parsers, CommandLineSegment[] cmdline, bool ignoreCases, out object result)
         {
-            ArgumentSegment[] cmdinfo = CommandParser.SplitCommandLine(cmdline);
-            CommandParser.SplitCommandInfo(cmdinfo, out var cmdname, out var arguments);
+            CommandParser.SplitCommandInfo(cmdline, out var cmdname, out var arguments);
             IArgument[] args = CommandParser.ParseArguments(parsers, arguments);
             return CommandInvoker.TryInvoke(methods, paramInfos, attributes, instance, cmdname, args, ignoreCases ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal, out result);
+        }
+        public bool TryExecuteCommand(IArgumentParser[] parsers, CommandLineSegment[] cmdline, out object result)
+        {
+            return TryExecuteCommand(parsers, cmdline, false, out result);
+        }
+        public bool TryExecuteCommand(IArgumentParser[] parsers, string cmdline, bool ignoreCases, out object result)
+        {
+            CommandLineSegment[] cmdinfo = CommandParser.SplitCommandLine(cmdline);
+            return TryExecuteCommand(parsers, cmdinfo, ignoreCases, out result);
         }
         public bool TryExecuteCommand(IArgumentParser[] parsers, string cmdline, out object result)
         {

@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using NullLib.ArgsParser;
 using NullLib.CommandLine;
 
@@ -34,7 +38,19 @@ namespace TestConsole
             {
                 return a / b;
             }
+            [Command(typeof(FloatConverter), null, null, typeof(ArgumentConverter))]
+            public float Test(float a, float b, float c, string qwq)
+            {
+                Console.WriteLine(qwq);
+                return a + b + c;
+            }
+            [Command(typeof(ForeachConverter<FloatConverter>))]
+            public float Adds(params float[] nums)
+            {
+                return nums.Sum();
+            }
         }
+
         static void Main(string[] args)
         {
             CommandObject<MyCommands> obj = new CommandObject<MyCommands>();       // 创建一个命令行对象
@@ -44,10 +60,20 @@ namespace TestConsole
                 new FieldArgumentParser(':'),
                 new StringArgumentParser(),
             };
+
+            Console.WriteLine("Easy command. Copyright 2021 Null.\n");
             while (true)
             {
-                obj.TryExecuteCommand(parsers, Console.ReadLine(), true, out object result);       // 尝试执行
-                Console.WriteLine($"Result: {result}\n");
+                Console.Write(">>> ");
+                string cmdline = Console.ReadLine();
+                if (cmdline == null)
+                    return;
+                if (string.IsNullOrWhiteSpace(cmdline))
+                    continue;
+                if (!obj.TryExecuteCommand(parsers, cmdline, true, out object result))
+                    Console.Error.WriteLine("Syntax error: can't execute command.");
+                if (result != null)
+                    Console.WriteLine(result);
             }
         }
     }

@@ -12,9 +12,9 @@ namespace NullLib.CommandLine
             new StringArgumentParser()
         };
 
-        public static ArgumentSegment[] SplitCommandLine(string str)
+        public static CommandLineSegment[] SplitCommandLine(string str)
         {
-            List<ArgumentSegment> rstBulder = new List<ArgumentSegment>();
+            List<CommandLineSegment> rstBulder = new List<CommandLineSegment>();
             StringBuilder temp = new StringBuilder();
             bool escape = false, quote = false;
 
@@ -47,7 +47,7 @@ namespace NullLib.CommandLine
                         {
                             if (i == '"')
                             {
-                                rstBulder.Add(new ArgumentSegment(temp.ToString(), true));
+                                rstBulder.Add(new CommandLineSegment(temp.ToString(), true));
                                 temp.Clear();
 
                                 quote = false;
@@ -63,7 +63,7 @@ namespace NullLib.CommandLine
                             {
                                 if (temp.Length > 0)
                                 {
-                                    rstBulder.Add(new ArgumentSegment(temp.ToString(), false));
+                                    rstBulder.Add(new CommandLineSegment(temp.ToString(), false));
                                     temp.Clear();
                                 }
 
@@ -73,7 +73,7 @@ namespace NullLib.CommandLine
                             {
                                 if (temp.Length > 0)
                                 {
-                                    rstBulder.Add(new ArgumentSegment(temp.ToString(), false));
+                                    rstBulder.Add(new CommandLineSegment(temp.ToString(), false));
                                     temp.Clear();
                                 }
                             }
@@ -87,25 +87,27 @@ namespace NullLib.CommandLine
             }
 
             if (temp.Length > 0)
-                rstBulder.Add(new ArgumentSegment(temp.ToString(), quote));
+                rstBulder.Add(new CommandLineSegment(temp.ToString(), quote));
 
             return rstBulder.ToArray();
         }
-        public static void SplitCommandInfo(ArgumentSegment[] segments, out string cmdname, out ArgumentSegment[] arguments)
+
+        public static void SplitCommandInfo(CommandLineSegment[] segments, out string cmdname, out CommandLineSegment[] arguments)
         {
             if (segments.Length > 0)
             {
                 cmdname = segments[0].Content;
-                arguments = new ArgumentSegment[segments.Length - 1];
+                arguments = new CommandLineSegment[segments.Length - 1];
                 Array.Copy(segments, 1, arguments, 0, arguments.Length);
             }
             else
             {
                 cmdname = "";
-                arguments = new ArgumentSegment[0];
+                arguments = new CommandLineSegment[0];
             }
         }
-        public static IArgument[] ParseArguments(IList<IArgumentParser> parsers, ArgumentSegment[] arguments)
+
+        public static IArgument[] ParseArguments(IList<IArgumentParser> parsers, CommandLineSegment[] arguments)
         {
             List<IArgument> result = new List<IArgument>();
             for (int i = 0, iend = arguments.Length; i < iend;)
@@ -123,7 +125,7 @@ namespace NullLib.CommandLine
 
             return result.ToArray();
         }
-        public static IArgument[] ParseArguments(ArgumentSegment[] arguments)
+        public static IArgument[] ParseArguments(CommandLineSegment[] arguments)
         {
             return ParseArguments(DefaultParsers, arguments);
         }

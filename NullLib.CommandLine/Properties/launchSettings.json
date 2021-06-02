@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "NullLib.CommandLine": {
+      "commandName": "Project"
+    }
+  }
+}

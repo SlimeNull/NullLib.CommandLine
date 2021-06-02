@@ -13,44 +13,55 @@ namespace NullLib.CommandLine
     }
     public interface IArgumentParser
     {
-        bool TryParse(ref int index, ref ArgumentSegment[] arguments, out IArgument result);
+        bool TryParse(ref int index, ref CommandLineSegment[] arguments, out IArgument result);
     }
-    public struct Argument : IArgument
+    public class Argument : IArgument
     {
-        public string Content { get; set; }
-        public object ValueObj { get; set; }
+        private string content;
+        private object valueObj;
+
+        public string Content { get => content; set => valueObj = content = value; }
+        public object ValueObj { get => valueObj; set => valueObj = value; }
+
+        public Argument() { }
 
         public Argument(string content)
         {
-            Content = content;
-            ValueObj = null;
+            this.content = content;
+            valueObj = content;
         }
     }
-    public struct NamedArgument : INamedArgument
+    public class NamedArgument : INamedArgument, IArgument
     {
-        public string Name { get; set; }
-        public string Content { get; set; }
-        public object ValueObj { get; set; }
+        private string name;
+        private string content;
+        private object valueObj;
+
+        public string Name { get => name; set => name = value; }
+        public string Content { get => content; set => valueObj = content = value; }
+        public object ValueObj { get => valueObj; set => valueObj = value; }
+
+        public NamedArgument() { }
 
         public NamedArgument(string name)
         {
-            Name = name;
-            Content = string.Empty;
-            ValueObj = null;
+            this.name = name;
+            this.content = string.Empty;
+            this.valueObj = string.Empty;
         }
         public NamedArgument(string name, string content)
         {
-            Name = name;
-            Content = content;
-            ValueObj = null;
+            this.name = name;
+            this.content = content;
+            this.valueObj = content;
         }
     }
-    public struct ArgumentSegment
+    public class CommandLineSegment
     {
         public bool Quoted;
         public string Content;
 
-        public ArgumentSegment(string content, bool quoted)
+        public CommandLineSegment(string content, bool quoted)
         {
             Content = content;
             Quoted = quoted;
@@ -58,7 +69,7 @@ namespace NullLib.CommandLine
     }
     public class StringArgumentParser : IArgumentParser
     {
-        public bool TryParse(ref int index, ref ArgumentSegment[] arguments, out IArgument result)
+        public bool TryParse(ref int index, ref CommandLineSegment[] arguments, out IArgument result)
         {
             result = new Argument(arguments[index++].Content);
             return true;
@@ -84,10 +95,10 @@ namespace NullLib.CommandLine
             }
             return false;
         }
-        public bool TryParse(ref int index, ref ArgumentSegment[] arguments, out IArgument result)
+        public bool TryParse(ref int index, ref CommandLineSegment[] arguments, out IArgument result)
         {
             result = null;
-            ArgumentSegment curSegment = arguments[index];
+            CommandLineSegment curSegment = arguments[index];
             if (curSegment.Quoted)
                 return false;
             if (!IsIdentifier(curSegment.Content))
@@ -99,9 +110,9 @@ namespace NullLib.CommandLine
     }
     public class AbsouteStringArgumentParser : IArgumentParser
     {
-        public bool TryParse(ref int index, ref ArgumentSegment[] arguments, out IArgument result)
+        public bool TryParse(ref int index, ref CommandLineSegment[] arguments, out IArgument result)
         {
-            ArgumentSegment curSegment = arguments[index];
+            CommandLineSegment curSegment = arguments[index];
             if (curSegment.Quoted)
             {
                 result = new Argument(curSegment.Content);
@@ -128,13 +139,13 @@ namespace NullLib.CommandLine
         {
             TriggerChar = triggerChar;
         }
-        public bool TryParse(ref int index, ref ArgumentSegment[] arguments, out IArgument result)
+        public bool TryParse(ref int index, ref CommandLineSegment[] arguments, out IArgument result)
         {
             result = null;
 
             if (index < arguments.Length)
             {
-                ArgumentSegment name = arguments[index];
+                CommandLineSegment name = arguments[index];
                 int eqindex = name.Content.IndexOf(triggerChar);   // the index of symbol 'equals': '='
                 if ((!name.Quoted) && eqindex > 0)
                 {
@@ -150,7 +161,7 @@ namespace NullLib.CommandLine
                             return false;
 
                         index++;
-                        ArgumentSegment content = arguments[index];
+                        CommandLineSegment content = arguments[index];
                         result = new NamedArgument(name.Content.Substring(0, name.Content.Length - 1), content.Content);
                         index++;
                         return true;
@@ -174,20 +185,20 @@ namespace NullLib.CommandLine
         {
             this.TriggerString = triggerString;
         }
-        public bool TryParse(ref int index, ref ArgumentSegment[] arguments, out IArgument result)
+        public bool TryParse(ref int index, ref CommandLineSegment[] arguments, out IArgument result)
         {
             result = null;
 
             if (index < arguments.Length)
             {
-                ArgumentSegment name = arguments[index];
+                CommandLineSegment name = arguments[index];
                 if ((!name.Quoted) && name.Content.StartsWith(triggerString))
                 {
                     if (index + 1 >= arguments.Length)
                         return false;
 
                     index++;
-                    ArgumentSegment content = arguments[index];
+                    CommandLineSegment content = arguments[index];
                     result = new NamedArgument(name.Content.Substring(1), content.Content);
                     index++;
                     return true;
