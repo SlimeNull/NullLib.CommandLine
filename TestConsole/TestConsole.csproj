@@ -12,6 +12,7 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -46,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MyCommands.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -55,7 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NullLib.CommandLine\NullLib.CommandLine.csproj">
-      <Project>{6e1d9a21-8a29-41a7-8c77-2f36c18a59de}</Project>
+      <Project>{6E1D9A21-8A29-41A7-8C77-2F36C18A59DE}</Project>
       <Name>NullLib.CommandLine</Name>
     </ProjectReference>
   </ItemGroup>

@@ -6,14 +6,18 @@ using System.Reflection;
 
 namespace NullLib.CommandLine
 {
-    public class CommandObject<T>
+    /// <summary>
+    /// CommandObject is used for calling method by command line.
+    /// </summary>
+    public class CommandObject
     {
-        readonly T instance;
+        protected readonly object instance;
+        Type instanceType;
         MethodInfo[] methods;
         ParameterInfo[][] paramInfos;
         CommandAttribute[] attributes;
 
-        public T TargetInstance => instance;
+        public virtual object TargetInstance => instance;
 
         private void InitializeInstance()
         {
@@ -21,7 +25,7 @@ namespace NullLib.CommandLine
             List<ParameterInfo[]> paramInfos = new List<ParameterInfo[]>();
             List<CommandAttribute> attributes = new List<CommandAttribute>();
 
-            foreach (var method in typeof(T).GetMethods())
+            foreach (var method in instanceType.GetMethods())
             {
                 CommandAttribute attribute = method.GetCustomAttribute<CommandAttribute>();
                 if (attribute != null)
@@ -38,13 +42,12 @@ namespace NullLib.CommandLine
             this.paramInfos = paramInfos.ToArray();
         }
 
-        public CommandObject() :
-            this(Activator.CreateInstance<T>()) { }
-        public CommandObject(T instance)
+        public CommandObject(object instance)
         {
             if (instance == null)
                 throw new ArgumentNullException(nameof(instance));
             this.instance = instance;
+            instanceType = instance.GetType();
             InitializeInstance();
         }
 
@@ -131,5 +134,20 @@ namespace NullLib.CommandLine
         {
             return TryExecuteCommand(CommandParser.DefaultParsers, cmdline, false, out result);
         }
+    }
+    public class CommandObject<T> : CommandObject where T : class
+    {
+        /// <summary>
+        /// Initialize an CommandObject instance, and set the TargetInstance property as a new instance initialized by the default constructor of <typeparamref name="T"/>
+        /// </summary>
+        public CommandObject() :
+            base(Activator.CreateInstance<T>()) { }
+        /// <summary>
+        /// Initialize an CommandObject instance, and set the param <paramref name="instance"/> as TargetInstance
+        /// </summary>
+        /// <param name="instance"></param>
+        public CommandObject(T instance) :
+            base(instance) { }
+        public new T TargetInstance { get => instance as T; }
     }
 }

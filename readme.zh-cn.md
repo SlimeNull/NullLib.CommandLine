@@ -1,14 +1,14 @@
 # NullLib.CommandLine
 
-Easily calling methods defined in C# with a command string.
+通过命令行字符串来方便快捷的调用 C# 中定义的方法
 
-## Usage 
+## 使用方式 
 
-First of all, the basic type in **NullLib.CommandLine** for calling methods is `CommandObject`, it contains methods' information, such as `MethodInfo`, `ParameterInfo`, and attributes.
+首先, 在 **NullLib.CommandLine** 中用于调用方法的最基本类型是 `CommandObject`, 它包含了方法的各种信息, 例如 `MethodInfo`, `ParameterInfo`, 以及属性.
 
-Then, a class which contains methods for being called should be defined, in this class, each method which will be called must has a Command attribute, and then, we will initialize a `CommandObject` instance with this type. 
+然后, 你需要定义一个包含要调用方法的类, 在这个类中, 每一个将被调用的方法都应该有一个 `Command` 属性, 之后我们将用这个类型实例化一个 `CommandObject` 实例.
 
-An example class:
+一个示例类型:
 
 ```csharp
 public class AppCommands
@@ -21,7 +21,7 @@ public class AppCommands
 }
 ```
 
-Initialize a `CommandObject` instance, and loop execute command.
+实例化一个 `CommandObject` 对象, 然后循环执行指令.
 
 ```csharp
 using System;
@@ -29,17 +29,17 @@ using NullLib.CommandLine;
 
 class Program
 {
-    static CommandObject<AppCommands> AppCommandObject = new CommandObject<AppCommands>();   // new CommandObject instance
+    static CommandObject<AppCommands> AppCommandObject = new CommandObject<AppCommands>();   // 实例化一个 CommandObject 对象
     static void Main(string[] args)
     {
         Console.WriteLine("Now input commands.");
         while (true)
         {
-            Console.Write(">>> ");          // prompt
+            Console.Write(">>> ");          // 提示符
             string cmdline = Console.ReadLine();
             if (!AppCommandObject.TryExecuteCommand(cmdline, out var result))
             {
-                if (result != null)             // if a method has no return value, then result is null.
+                if (result != null)             // 如果一个方法没有返回值, 则结果是 null.
 	                Console.WriteLine(result);
             }
             else
@@ -51,7 +51,7 @@ class Program
 }
 ```
 
-Run application, and input command:
+运行程序, 并输入指令:
 
 ```txt
 Now input commands.
@@ -59,45 +59,45 @@ Now input commands.
 Hello world!
 ```
 
-To pass parameters to method, specify `ArgumentConverter` for each parameter.
+为每一个参数指定 `ArgumentConverter` 来以传递参数到方法.
 
-Let's add these methods to `AppCommands`
+那么, 我们再试试将这些方法添加到 `AppCommands` 中
 
 ```csharp
-[Command(typeof(FloatArguConverter), typeof(FloatArguConverter))]      // the build-in ArgumentConverter in NullLib.CommandLine
+[Command(typeof(FloatArguConverter), typeof(FloatArguConverter))]      // NullLib.CommandLine 中的内置 ArgumentConverter
 public float Plus(float a, float b)
 {
     return a + b;
 }
-[Command(typeof(FloatArguConverter))]        // if the following converters is same as the last one, you can ignore these
+[Command(typeof(FloatArguConverter))]        // 如果跟着的转换器与上一个是一样的, 那么你可以忽略它们
 public float Mul(float a, float b)
 {
     return a * b;
 }
 [Command(typeof(DoubleArguConverter))]
-public double Log(double n, double newBase = Math.E)    // you can also use optional parameter
+public double Log(double n, double newBase = Math.E)    // 你也可以使用可选参数
 {
     return Math.Log(n, newBase);
 }
-[Command(typeof(ForeachArguConverter<FloatArguConverter>))]   // each string of array will be converted by FloatArguConverter
-public float Sum(params float[] nums)                 // variable length parameter method is supported
+[Command(typeof(ForeachArguConverter<FloatArguConverter>))]   // 数组中的每一个字符串都将被 FloatArguConverter 转换
+public float Sum(params float[] nums)                 // 可变参数的方法也是受支持的
 {
     float result = 0;
     foreach (var i in nums)
         result += i;
     return result;
 }
-[Command(typeof(ArgutConverter))]        // if don't need to do any convertion, specify an 'ArguConverter'
+[Command(typeof(ArgutConverter))]        // 如果不需要做任何转换, 则可以指定一个 'ArguConverter'
 public void Print(string txt)
 {
     Console.WriteLine(txt);
 }
-[Command]                                   // the defualt converter is 'ArgumentConverter', you can ignore these
-public bool StringEquals(string txt1, string txt2)   // or specify 'null' to use the last converter (here is ArguConverter)
+[Command]                                   // 默认的转换器是 'ArguConverter', 在这种情况下你可以忽略它们
+public bool StringEquals(string txt1, string txt2)   // 或者指定 'null' 来使用上一个转换器(在这里指 ArguConverter)
 {
     return txt1.Equals(txt2);
 }
-[Command(typeof(EnumArguConverter<ConsoleColor>))]   // EnumConverter helps convert string to Enum type automatically.
+[Command(typeof(EnumArguConverter<ConsoleColor>))]   // EnumConverter 可以用来将字符串自动转换为枚举类型
 public void SetBackground(ConsoleColor color)
 {
     Console.BackgroundColor = color;
@@ -118,14 +118,14 @@ Now input commands.
 2.07944154167984
 >>> Sum 1 2 3 4
 10
->>> Print "some text\tescaped char is also supported"
-some text       escaped char is also supported
+>>> Print "一些文本\t转义字符也是受支持的"
+一些文本	转义字符也是受支持的
 >>> StringEquals qwq awa
 False
 >>> SetBackground White
 >>> SetBackground 0
->>> Print "you can convert to a enum type by it's name or integer value"
-you can convert to a enum type by it's name or integer value
+>>> Print "你可以通过一个枚举类型的名字或整数值来进行转换"
+你可以通过一个枚举类型的名字或整数值来进行转换
 ```
 
 
@@ -134,7 +134,7 @@ you can convert to a enum type by it's name or integer value
 
 1. CommandAttribute:
 
-   Method that can be execute by command string must has a `CommandAttribute`
+   可以通过命令行字符串执行的方法必须有一个 `CommandAttribute` 属性
 
 2. CommandObject:
 
@@ -322,5 +322,3 @@ So, if you inherit `ArgumentConverter<T>`, you just need to override these two m
        new PropertyArguParser()         // so you should place ArguParser as the last parser.
    }, Console.ReadLine());
    ```
-
-
