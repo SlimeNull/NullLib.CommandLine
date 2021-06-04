@@ -181,6 +181,10 @@ namespace NullLib.CommandLine
         #endregion
 
         #region InvokerOverloads
+        public static bool TryInvoke(MethodInfo method, ParameterInfo[] paramInfos, CommandAttribute attribute, object instance, IArgument[] args, out object result)
+        {
+            return TryInvoke(method, paramInfos, attribute, instance, args, StringComparison.Ordinal, out result);
+        }                  // not root
         public static bool TryInvoke(MethodInfo method, ParameterInfo[] paramInfos, object instance, IArgument[] args, StringComparison stringComparison, out object result)
         {
             return TryInvoke(method, paramInfos, method.GetCustomAttribute<CommandAttribute>(), instance, args, stringComparison, out result);
@@ -198,6 +202,10 @@ namespace NullLib.CommandLine
             return TryInvoke(method, method.GetParameters(), instance, args, StringComparison.Ordinal, out result);
         }
 
+        public static object Invoke(MethodInfo method, ParameterInfo[] paramInfos, CommandAttribute attribute, object instance, IArgument[] args)
+        {
+            return Invoke(method, paramInfos, attribute, instance, args, StringComparison.Ordinal);
+        }    // not root
         public static object Invoke(MethodInfo method, ParameterInfo[] paramInfos, object instance, IArgument[] args, StringComparison stringComparison)
         {
             return Invoke(method, paramInfos, method.GetCustomAttribute<CommandAttribute>(), instance, args, stringComparison);
@@ -215,6 +223,10 @@ namespace NullLib.CommandLine
             return Invoke(method, method.GetParameters(), instance, args, StringComparison.Ordinal);
         }
 
+        public static bool TryInvoke(MethodInfo[] methods, ParameterInfo[][] paramInfos, CommandAttribute[] attributes, object instance, string methodName, IArgument[] args, out object result)
+        {
+            return TryInvoke(methods, paramInfos, attributes, instance, methodName, args, StringComparison.Ordinal, out result);
+        }               // not root
         public static bool TryInvoke(MethodInfo[] methods, ParameterInfo[][] paramInfos, object instance, string methodName, IArgument[] args, StringComparison stringComparison, out object result)
         {
             CommandAttribute[] attributes = new CommandAttribute[methods.Length];
@@ -238,6 +250,10 @@ namespace NullLib.CommandLine
             return TryInvoke(methods, instance, methodName, args, StringComparison.Ordinal, out result);
         }                                                // not root
 
+        public static object Invoke(MethodInfo[] methods, ParameterInfo[][] paramInfos, CommandAttribute[] attributes, object instance, string methodName, IArgument[] args)
+        {
+            return Invoke(methods, paramInfos, attributes, instance, methodName, args, StringComparison.Ordinal);
+        }                                   // not root
         public static object Invoke(MethodInfo[] methods, ParameterInfo[][] paramInfos, object instance, string methodName, IArgument[] args, StringComparison stringComparison)
         {
             CommandAttribute[] attributes = new CommandAttribute[methods.Length];
@@ -261,30 +277,63 @@ namespace NullLib.CommandLine
             return Invoke(methods, instance, methodName, args, StringComparison.Ordinal);
         }                                          // not root
 
-        public static bool TryInvoke(MethodInfo method, ParameterInfo[] paramInfos, CommandAttribute attribute, object instance, IArgument[] args, out object result)
+        public static bool CanInvoke(MethodInfo method, ParameterInfo[] paramInfos, CommandAttribute attribute, string methodName, IArgument[] args)
         {
-            return TryInvoke(method, paramInfos, attribute, instance, args, StringComparison.Ordinal, out result);
-        }                  // not root
-        public static object Invoke(MethodInfo method, ParameterInfo[] paramInfos, CommandAttribute attribute, object instance, IArgument[] args)
+            return CanInvoke(method, paramInfos, attribute, methodName, args, StringComparison.Ordinal);
+        }
+        public static bool CanInvoke(MethodInfo method, ParameterInfo[] paramInfos, string methodName, IArgument[] args, StringComparison stringComparison)
         {
-            return Invoke(method, paramInfos, attribute, instance, args, StringComparison.Ordinal);
-        }    // not root
+            return CanInvoke(method, paramInfos, method.GetCustomAttribute<CommandAttribute>(), methodName, args, stringComparison);
+        }
+        public static bool CanInvoke(MethodInfo method, ParameterInfo[] paramInfos, string methodName, IArgument[] args)
+        {
+            return CanInvoke(method, paramInfos, method.GetCustomAttribute<CommandAttribute>(), methodName, args, StringComparison.Ordinal);
+        }
+        public static bool CanInvoke(MethodInfo method, string methodName, IArgument[] args, StringComparison stringComparison)
+        {
+            return CanInvoke(method, method.GetParameters(), method.GetCustomAttribute<CommandAttribute>(), methodName, args, stringComparison);
+        }
+        public static bool CanInvoke(MethodInfo method, string methodName, IArgument[] args)
+        {
+            return CanInvoke(method, method.GetParameters(), method.GetCustomAttribute<CommandAttribute>(), methodName, args, StringComparison.Ordinal);
+        }
 
-        public static bool TryInvoke(MethodInfo[] methods, ParameterInfo[][] paramInfos, CommandAttribute[] attributes, object instance, string methodName, IArgument[] args, out object result)
+        public static bool CanInvoke(MethodInfo[] methods, ParameterInfo[][] paramInfos, CommandAttribute[] attributes, string methodName, IArgument[] args)
         {
-            return TryInvoke(methods, paramInfos, attributes, instance, methodName, args, StringComparison.Ordinal, out result);
-        }               // not root
-        public static object Invoke(MethodInfo[] methods, ParameterInfo[][] paramInfos, CommandAttribute[] attributes, object instance, string methodName, IArgument[] args)
+            return CanInvoke(methods, paramInfos, attributes, methodName, args, StringComparison.Ordinal);
+        }
+        public static bool CanInvoke(MethodInfo[] methods, ParameterInfo[][] paramInfos, string methodName, IArgument[] args, StringComparison stringComparison)
         {
-            return Invoke(methods, paramInfos, attributes, instance, methodName, args, StringComparison.Ordinal);
-        }                                   // not root
+            CommandAttribute[] attributes = new CommandAttribute[methods.Length];
+            for (int i = 0, end = methods.Length; i < end; i++)
+                attributes[i] = methods[i].GetCustomAttribute<CommandAttribute>();
+            return CanInvoke(methods, paramInfos, attributes, methodName, args, stringComparison);
+        }
+        public static bool CanInvoke(MethodInfo[] methods, ParameterInfo[][] paramInfos, string methodName, IArgument[] args)
+        {
+            return CanInvoke(methods, paramInfos, methodName, args, StringComparison.Ordinal);
+        }
+        public static bool CanInvoke(MethodInfo[] methods, string methodName, IArgument[] args, StringComparison stringComparison)
+        {
+            ParameterInfo[][] paramInfos = new ParameterInfo[methods.Length][];
+            for (int i = 0, end = methods.Length; i < end; i++)
+                paramInfos[i] = methods[i].GetParameters();
+            return CanInvoke(methods, paramInfos, methodName, args, stringComparison);
+        }
+        public static bool CanInvoke(MethodInfo[] methods, string methodName, IArgument[] args)
+        {
+            return CanInvoke(methods, methodName, args, StringComparison.Ordinal);
+        }
+
         #endregion
 
         #region InvokerRoots
         public static bool TryInvoke(MethodInfo method, ParameterInfo[] paramInfos, CommandAttribute attribute, object instance, IArgument[] args, StringComparison stringComparison, out object result)
         {
             result = null;
-
+#if DEBUG
+            string methodName = method.Name;
+#endif
             if (!TryFormatArguments(paramInfos, args, stringComparison, out var formatedArgs))
                 return false;
             if (!TryConvertArguments(paramInfos, attribute.ArgumentConverters, ref formatedArgs))
@@ -339,6 +388,20 @@ namespace NullLib.CommandLine
             }
 
             throw new EntryPointNotFoundException("Cannot find matched method.");
+        }
+        public static bool CanInvoke(MethodInfo method, ParameterInfo[] paramInfos, CommandAttribute attribute, string methodName, IArgument[] args, StringComparison stringComparison)
+        {
+            return
+                method.Name.Equals(methodName, stringComparison) &&
+                TryFormatArguments(paramInfos, args, stringComparison, out var formatedArgs) &&
+                TryConvertArguments(paramInfos, attribute.ArgumentConverters, ref formatedArgs);
+        }
+        public static bool CanInvoke(MethodInfo[] methods, ParameterInfo[][] paramInfos, CommandAttribute[] attributes, string methodName, IArgument[] args, StringComparison stringComparison)
+        {
+            for (int i = 0, end = methods.Length; i < end; i++)
+                if (CanInvoke(methods[i], paramInfos[i], attributes[i], methodName, args, stringComparison))
+                    return true;
+            return false;
         }
         #endregion
     }

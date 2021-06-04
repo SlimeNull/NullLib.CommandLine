@@ -33,8 +33,6 @@ namespace TestConsole
                     Console.Error.WriteLine("Syntax error: can't execute command.");
                 if (result != null)
                     Console.WriteLine(result);
-
-                
             }
         }
     }

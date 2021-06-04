@@ -19,27 +19,12 @@ namespace NullLib.CommandLine
 
         public virtual object TargetInstance => instance;
 
-        private void InitializeInstance()
+        private void InitializeInstance(bool fastMode)
         {
-            List<MethodInfo> methods = new List<MethodInfo>();
-            List<ParameterInfo[]> paramInfos = new List<ParameterInfo[]>();
-            List<CommandAttribute> attributes = new List<CommandAttribute>();
-
-            foreach (var method in instanceType.GetMethods())
-            {
-                CommandAttribute attribute = method.GetCustomAttribute<CommandAttribute>();
-                if (attribute != null)
-                {
-                    ParameterInfo[] _paramInfos = method.GetParameters();
-                    methods.Add(method);
-                    attributes.Add(attribute);
-                    paramInfos.Add(_paramInfos);
-                }
-            }
-
-            this.methods = methods.ToArray();
-            this.attributes = attributes.ToArray();
-            this.paramInfos = paramInfos.ToArray();
+            if (fastMode)
+                CommandObjectManager.GetCommandObjectInfo(instanceType, out methods, out paramInfos, out attributes);
+            else
+                CommandObjectManager.NewCommandObjectInfo(instanceType, out methods, out paramInfos, out attributes);
         }
 
         public CommandObject(object instance)
@@ -48,7 +33,15 @@ namespace NullLib.CommandLine
                 throw new ArgumentNullException(nameof(instance));
             this.instance = instance;
             instanceType = instance.GetType();
-            InitializeInstance();
+            InitializeInstance(true);
+        }
+        public CommandObject(object instance, bool fastMode)
+        {
+            if (instance == null)
+                throw new ArgumentNullException(nameof(instance));
+            this.instance = instance;
+            instanceType = instance.GetType();
+            InitializeInstance(fastMode);
         }
 
         public static object[] GetArguments(MethodInfo method, object instance)
@@ -107,6 +100,36 @@ namespace NullLib.CommandLine
         {
             return ExecuteCommand(CommandParser.DefaultParsers, cmdline, false);
         }
+
+        public bool CanExecuteCommand(IArgumentParser[] parsers, CommandLineSegment[] cmdline, bool ignoreCases)
+        {
+            CommandParser.SplitCommandInfo(cmdline, out var cmdname, out var cmdparams);
+            var args = CommandParser.ParseArguments(parsers, cmdparams);
+            return CommandInvoker.CanInvoke(methods, paramInfos, attributes, cmdname, args, ignoreCases ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+        }
+        public bool CanExecuteCommand(IArgumentParser[] parsers, CommandLineSegment[] cmdline)
+        {
+            return CanExecuteCommand(parsers, cmdline, false);
+        }
+        public bool CanExecuteCommand(IArgumentParser[] parsers, string cmdline, bool ignoreCases)
+        {
+            CommandLineSegment[] cmdlineSegs = CommandParser.SplitCommandLine(cmdline);
+            return CanExecuteCommand(parsers, cmdlineSegs, ignoreCases);
+        }
+        public bool CanExecuteCommand(IArgumentParser[] parsers, string cmdline)
+        {
+            CommandLineSegment[] cmdlineSegs = CommandParser.SplitCommandLine(cmdline);
+            return CanExecuteCommand(parsers, cmdlineSegs, false);
+        }
+        public bool CanExecuteCommand(string cmdline, bool ignoreCases)
+        {
+            return CanExecuteCommand(CommandParser.DefaultParsers, cmdline, ignoreCases);
+        }
+        public bool CanExecuteCommand(string cmdline)
+        {
+            return CanExecuteCommand(CommandParser.DefaultParsers, cmdline, false);
+        }
+
         public bool TryExecuteCommand(IArgumentParser[] parsers, CommandLineSegment[] cmdline, bool ignoreCases, out object result)
         {
             CommandParser.SplitCommandInfo(cmdline, out var cmdname, out var arguments);
@@ -149,5 +172,72 @@ namespace NullLib.CommandLine
         public CommandObject(T instance) :
             base(instance) { }
         public new T TargetInstance { get => instance as T; }
+    }
+    public static class CommandObjectManager
+    {
+        private static Dictionary<Type, CommandObjectInfo> cmdObjInfos = new Dictionary<Type, CommandObjectInfo>();
+
+        public static bool HasInfo(Type type)
+        {
+            return cmdObjInfos.ContainsKey(type);
+        }
+        public static bool RemoveInfo(Type type)
+        {
+            return cmdObjInfos.Remove(type);
+        }
+        public static void GetCommandObjectInfo(Type type, out MethodInfo[] methods, out ParameterInfo[][] paramInfos, out CommandAttribute[] attributes)
+        {
+            if (cmdObjInfos.TryGetValue(type, out var cmdObjInfo))
+            {
+                methods = cmdObjInfo.Methods;
+                paramInfos = cmdObjInfo.ParamInfos;
+                attributes = cmdObjInfo.Attributes;
+            }
+            else
+            {
+                NewCommandObjectInfo(type, out methods, out paramInfos, out attributes);
+                cmdObjInfos[type] = new CommandObjectInfo(methods, paramInfos, attributes);
+            }
+        }
+        public static void NewCommandObjectInfo(Type type, out MethodInfo[] methods, out ParameterInfo[][] paramInfos, out CommandAttribute[] attributes)
+        {
+            List<MethodInfo> _methods = new List<MethodInfo>();
+            List<ParameterInfo[]> _paramInfos = new List<ParameterInfo[]>();
+            List<CommandAttribute> _attributes = new List<CommandAttribute>();
+
+            foreach (var method in type.GetMethods())
+            {
+                CommandAttribute attribute = method.GetCustomAttribute<CommandAttribute>();
+                if (attribute != null)
+                {
+                    ParameterInfo[] __paramInfos = method.GetParameters();
+                    _methods.Add(method);
+                    _attributes.Add(attribute);
+                    _paramInfos.Add(__paramInfos);
+                }
+            }
+
+            methods = _methods.ToArray();
+            paramInfos = _paramInfos.ToArray();
+            attributes = _attributes.ToArray();
+        }
+
+        class CommandObjectInfo
+        {
+            public MethodInfo[] Methods;
+            public CommandAttribute[] Attributes;
+            public ParameterInfo[][] ParamInfos;
+
+            public CommandObjectInfo(Type classType)
+            {
+                GetCommandObjectInfo(classType, out this.Methods, out this.ParamInfos, out this.Attributes);
+            }
+            public CommandObjectInfo(MethodInfo[] methods, ParameterInfo[][] paramInfos, CommandAttribute[] attributes)
+            {
+                this.Methods = methods;
+                this.ParamInfos = paramInfos;
+                this.Attributes = attributes;
+            }
+        }
     }
 }

@@ -47,9 +47,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ElseCommands.cs" />
+    <Compile Include="ElseIfCommands.cs" />
+    <Compile Include="IfCommands.cs" />
     <Compile Include="MyCommands.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SyntaxException.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

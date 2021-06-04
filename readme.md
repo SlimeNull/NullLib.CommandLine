@@ -1,12 +1,32 @@
 # NullLib.CommandLine
 
+## Index / 索引
+
+1. This document has two version, English and Chinese.
+
+   这个文档有两个版本, 英文和中文.
+
+2. The following content is English version, to read Chinese version, scroll down.
+
+   下面的是英文版本, 如果要阅读中文版本, 请往下翻.
+
+3. To read whole document, open file in source repository which name like "readme.language.md". readme.en-us.md for English
+
+   这不是全部, 阅读完整版文档, 请打开本仓库中名字像 "readme.语言.md" 的文件. 例如, 中文文档是 readme.zh-cn.md
+   
+4. For more information, go to [Github](https://github.com/SlimeNull/NullLib.CommandLine)
+
+   更多信息, 请转到 [Github](https://github.com/SlimeNull/NullLib.CommandLine)
+
+## EN-US
+
 Easily calling methods defined in C# with a command string.
 
-## Usage 
+### Usage 
 
 First of all, the basic type in **NullLib.CommandLine** for calling methods is `CommandObject`, it contains methods' information, such as `MethodInfo`, `ParameterInfo`, and attributes.
 
-Then, a class which contains methods for being called should be defined, in this class, each method which will be called must has a Command attribute, and then, we will initialize a `CommandObject` instance with this type. 
+Then, a class which contains methods for being called should be defined, in this class, each method which will be called must has a `Command` attribute, and then, we will initialize a `CommandObject` instance with this type. 
 
 An example class:
 
@@ -79,7 +99,7 @@ public double Log(double n, double newBase = Math.E)    // you can also use opti
 {
     return Math.Log(n, newBase);
 }
-[Command(typeof(ForeachArguConverter<FloatArguConverter>))]   // each string of array will be converted by FloatArguConverter
+[Command(typeof(ForeachArguConverter<FloatArguConverter>))]   // each string of array will be converted by FloatConverter
 public float Sum(params float[] nums)                 // variable length parameter method is supported
 {
     float result = 0;
@@ -92,8 +112,8 @@ public void Print(string txt)
 {
     Console.WriteLine(txt);
 }
-[Command]                                   // the defualt converter is 'ArgumentConverter', you can ignore these
-public bool StringEquals(string txt1, string txt2)   // or specify 'null' to use the last converter (here is ArguConverter)
+[Command]                                // the defualt converter is 'ArgumentConverter', you can ignore these
+public bool StringEquals(string txt1, string txt2)   // or specify 'null' to use the last converter (here is ArgumentConverter)
 {
     return txt1.Equals(txt2);
 }
@@ -124,203 +144,132 @@ some text       escaped char is also supported
 False
 >>> SetBackground White
 >>> SetBackground 0
->>> Print "you can convert to a enum type by it's name or integer value"
-you can convert to a enum type by it's name or integer value
 ```
 
+## ZH-CN
 
+通过命令行字符串来方便快捷的调用 C# 中定义的方法
 
-## Types
+### 使用方式 
 
-1. CommandAttribute:
+首先, 在 **NullLib.CommandLine** 中用于调用方法的最基本类型是 `CommandObject`, 它包含了方法的各种信息, 例如 `MethodInfo`, `ParameterInfo`, 以及属性.
 
-   Method that can be execute by command string must has a `CommandAttribute`
+然后, 你需要定义一个包含要调用方法的类, 在这个类中, 每一个将被调用的方法都应该有一个 `Command` 属性, 之后我们将用这个类型实例化一个 `CommandObject` 实例.
 
-2. CommandObject:
-
-   Class for invoking methods by command string.
-
-3. CommandInvoker:
-
-   Helps invoking methods by `IArguments`.
-
-4. CommandParser:
-
-   Helps to parse a command string for method calling.
-
-5. ArgumentConverter:
-
-   Implemented `IArgumentConverter` interface, abstract class, should be inherited by custom Converter.
-
-6. ArgumentConverterManager:
-
-   Helps create `ArgumentConverter` rapidly.
-
-7. CommandLineSegment:
-
-   Component of command line string.
-
-8. ArgumentParser:
-
-   Helps parse `CommandLineSegment` to `IArgument`
-
-
-
-## CommandLineSegment
-
-CommandLineSegment is a component of command line string.
-
-For example, in `myprogram param1 "param2"`, there is three CommandLineSegment:
-
-1. {Quoted: false, Content: "myprogram"}
-2. {Quoted: false, Content: "param1"}
-3. {Quoted: true, Content: "\\"param2\\""}
-
-To split a command line string to CommandLineSegment[], use `CommandParser.SplitCommandLine(string str)`
-
-
-
-## Argument
-
-1. Argument:
-
-   The basic Argument type, with no name, implemented `IArgument`, when invoking method, will be passed one by one.
-
-2. NamedArgument:
-
-   Argument with name, when invoking method, will be passed according it's name to a correct position.
-
-
-
-## ArgumentParser
-
-Here is all build-in `ArgumentParsers`:
-
-1. ArguParser:
-
-   It can parse any segment as an Argument.
-   
-2. IdentifierArguParser:
-
-   It can parse an identifier segment as an `Argument`. The corresponding regex string is *"{A-Za-z\_}{A-Za-z0-9\_}\*"*
-
-3. StringArguParser:
-
-   It can parse any segments as an `Argument`, but the segment must be `Quoted`.
-
-4. FieldArguParser:
-
-   It can parse a segment like <u>*name=value*</u> or two segments like <u>*name= value*</u> to a `NamedArgument`, also, you can specify the separator, default is '='.
-
-5. PropertyArguParser:
-
-   It can parse two segments like <u>*-name value*</u> to a NamedArgument, and you can also specify the start string of <u>*name*</u>, default is "-".
-
-
-
-## ArgumentConverter
-
-Here is all build-in `ArgumentConverter`:
-
-1. ArguConverter:
-
-   The default `ArgumentConverter` which returns the source value without any conversion
-
-2. BoolArguConverter:
-
-   Helps convert to bool, for source value, if it's "true", then return true, if it's "false", then return false, otherwise, convert failed. (Cases is ignored).
-
-3. CharArguConverter:
-
-   Helps convert to char, only when source string has one char, returns the char, otherwise, convert failed.
-
-4.   ByteArguConverter:
-
-5. ShortArguConverter:
-
-6. IntArguConverter:
-
-7. LongArguConverter:
-
-8. FloatArguConverter:
-
-9. DoubleArguConverter:
-
-10. BigIntArguConverter:
-
-11. DecimalArguConverter:
-
-    The converters mentioned above all returns the corresponding number type, and all calls `Parse` and `TryParse` method of corresponding number type.
-
-12. EnumArguConverter&lt;T&gt;:
-
-    Helps convert to `Enum` type. T should specified a `Enum` type. It can convert from a name or number value of `Enum` type.
-
-13. ForeachArguConverter&lt;TConverter&gt;:
-
-    Helps convert to Array, only used for variable-length parameter (decorated by `params`), `TConverter` must implement `IArgumentConverter`, each value of source string array will be converted by the specified Converter.
-
-14. CharArrayArguConverter:
-
-    Helps convert to char array, it calls `string.ToCharArray()` to do conversion.
-    
-
-
-## About ArgumentParser
-
-### Custom Parser:
-
-To define custom `ArgumentParser`, your must follow these rules:
-
-1. Implements `IArgumentParser`
-2. After parsing, the reference parameter `index` must leave the parts of result(IArgument), for example, at the index 3, in your custom parser, it will return the result (result was parsed successfully), and the result is from two `CommandLineSegment`s, then the index must be 5 (out of 3 and 4).
-
-## About ArgumentConverter
-
-### Custom Converter:
-
-The recommended way to define a custom `ArgumentConverter` is this:
+一个示例类型:
 
 ```csharp
-class MyConverter : ArgumentConverter<MyType>    // inherit ArgumentConverter<T> but not IArgumentConverter<T>
+public class AppCommands
 {
-    public override MyType Convert(string argument)
+    [Command]
+    public void HelloWorld()
     {
-        // your code here
-    }
-    public override bool TryConvert(string argument, out MyType result)
-    {
-        // your code here
+        Console.WriteLine("Hello world!");
     }
 }
 ```
 
-The reason to inherit `ArgumentConverter<T>` but not `IArgumentConverter<T>` is, in `ArgumentConverter<T>`, all overloads calls two methods:
+实例化一个 `CommandObject` 对象, 然后循环执行指令.
 
-1. T Convert(string argument);
-2. bool TryConverter(string argument, out T result);
+```csharp
+using System;
+using NullLib.CommandLine;
 
-So, if you inherit `ArgumentConverter<T>`, you just need to override these two methods.
+class Program
+{
+    static CommandObject<AppCommands> AppCommandObject = new CommandObject<AppCommands>();   // 实例化一个 CommandObject 对象
+    static void Main(string[] args)
+    {
+        Console.WriteLine("Now input commands.");
+        while (true)
+        {
+            Console.Write(">>> ");          // 提示符
+            string cmdline = Console.ReadLine();
+            if (!AppCommandObject.TryExecuteCommand(cmdline, out var result))
+            {
+                if (result != null)             // 如果一个方法没有返回值, 则结果是 null.
+	                Console.WriteLine(result);
+            }
+            else
+            {
+                Console.WriteLine("Command execute failed.");
+            }
+        }
+    }
+}
+```
 
-### Tips:
+运行程序, 并输入指令:
 
-1. DO NOT create a `ArgumentConverter` with new expression, use `ArgumentConverterManager.GetConverter<T>()`.
+```txt
+Now input commands.
+>>> HelloWorld
+Hello world!
+```
 
+为每一个参数指定 `ArgumentConverter` 以传递参数到方法.
 
+那么, 我们再试试将这些方法添加到 `AppCommands` 中
 
-## FAQ
+```csharp
+[Command(typeof(FloatArguConverter), typeof(FloatArguConverter))]      // NullLib.CommandLine 中的内置 ArgumentConverter
+public float Plus(float a, float b)
+{
+    return a + b;
+}
+[Command(typeof(FloatArguConverter))]        // 如果跟着的转换器与上一个是一样的, 那么你可以忽略它们
+public float Mul(float a, float b)
+{
+    return a * b;
+}
+[Command(typeof(DoubleArguConverter))]
+public double Log(double n, double newBase = Math.E)    // 你也可以使用可选参数
+{
+    return Math.Log(n, newBase);
+}
+[Command(typeof(ForeachArguConverter<FloatArguConverter>))]   // 数组中的每一个字符串都将被 FloatArguConverter 转换
+public float Sum(params float[] nums)                 // 可变参数的方法也是受支持的
+{
+    float result = 0;
+    foreach (var i in nums)
+        result += i;
+    return result;
+}
+[Command(typeof(ArgutConverter))]        // 如果不需要做任何转换, 则可以指定一个 'ArguConverter'
+public void Print(string txt)
+{
+    Console.WriteLine(txt);
+}
+[Command]                                // 默认的转换器是 'ArguConverter', 在这种情况下你可以忽略它们
+public bool StringEquals(string txt1, string txt2)   // 或者指定 'null' 来使用上一个转换器(在这里指 ArguConverter)
+{
+    return txt1.Equals(txt2);
+}
+[Command(typeof(EnumArguConverter<ConsoleColor>))]   // EnumConverter 可以用来将字符串自动转换为枚举类型
+public void SetBackground(ConsoleColor color)
+{
+    Console.BackgroundColor = color;
+}
+```
 
-1. When I calling `CommandObject.ExecuteCommand(IArgumentParser[] parsers, string cmdline)`, but some of parsers don't work:
+Run and input:
 
-   ```csharp
-   // you must specify parsers in a correct order, for example:
-   CommandObject<AppCommands> myCmds = new CommandObject<AppCommands>();
-   myCmds.ExecuteCommand(new IArgumentParser[]
-   {
-       new ArguParser(),                // in this case, FieldArguParser and PropertyArguParser will not work.
-       new FieldArguParser(),           // this is because that ArguParser can parse ANY CommandLineSegments
-       new PropertyArguParser()         // so you should place ArguParser as the last parser.
-   }, Console.ReadLine());
-   ```
-
-
+```txt
+Now input commands.
+>>> Plus 1 1
+2
+>>> Mul 2 4
+8
+>>> Log 8 2
+3
+>>> Log 8
+2.07944154167984
+>>> Sum 1 2 3 4
+10
+>>> Print "一些文本\t转义字符也是受支持的"
+一些文本	转义字符也是受支持的
+>>> StringEquals qwq awa
+False
+>>> SetBackground White
+>>> SetBackground 0
+```

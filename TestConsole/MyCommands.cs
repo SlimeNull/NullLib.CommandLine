@@ -6,147 +6,27 @@ namespace TestConsole
 {
     partial class Program
     {
-        class MyCommands
+        partial class MyCommands
         {
-            public CommandObject<MyCommands> CommandObject = new CommandObject<MyCommands>();
+            public CommandObject<MyCommands> Self { get; }
+            public static object STDOUT
+            { 
+                set
+                {
+                    if (value != null)
+                        Console.WriteLine(value);
+                }
+            }
+
+            public MyCommands()
+            {
+                Self = new CommandObject<MyCommands>(this);
+            }
 
             public static string NextCommandString()
             {
                 Console.Write(">>> ");
                 return Console.ReadLine();
-            }
-
-            public class IfCommands
-            {
-                public CommandObject<IfCommands> CommandObject = new CommandObject<IfCommands>();
-                public bool Src = false;
-                public bool ToEndIf = false;
-
-                public IfCommands(bool value)
-                {
-                    Src = value;
-                }
-
-                public void ElseIfToDo(bool value)
-                {
-                    if (Src)
-                    {
-
-                    }
-                    else
-                    {
-
-                    }
-                }
-
-                [Command]
-                public void ElseIf(ObjectComparision comparision, string param)
-                {
-                    ElseIfCommands.CommandObject.TargetInstance.ElseIf(comparision, param);
-                }
-                [Command]
-                public void ElseIf(int num1, ObjectComparision comparision, int num2)
-                {
-                    ElseIfCommands.CommandObject.TargetInstance.ElseIf(num1, comparision, num2);
-                }
-                [Command]
-                public void ElseIf(float num1, ObjectComparision comparision, float num2)
-                {
-                    ElseIfCommands.CommandObject.TargetInstance.ElseIf(num1, comparision, num2);
-                }
-                [Command]
-                public void ElseIf(double num1, ObjectComparision comparision, double num2)
-                {
-                    ElseIfCommands.CommandObject.TargetInstance.ElseIf(num1, comparision, num2);
-                }
-                [Command]
-                public void ElseIf(string str1, ObjectComparision comparision, string str2)
-                {
-                    ElseIfCommands.CommandObject.TargetInstance.ElseIf(str1, comparision, str2);
-                }
-                [Command]
-                public void Else()
-                {
-                    ElseCommands.CommandObject.TargetInstance.Else();
-                }
-                [Command]
-                public void EndIf()
-                {
-                    ToEndIf = true;
-                }
-            }
-            public class ElseIfCommands
-            {
-                public CommandObject<ElseIfCommands> CommandObject = new CommandObject<ElseIfCommands>();
-                public bool Src;
-                public bool ToEndIf;
-
-
-                public void ElseIfToDo(bool ok)
-                {
-                    CommandObject.TargetInstance.Src = ok;
-                    CommandObject.TargetInstance.ToEndIf = false;
-                    if (ok)
-                    {
-                        do
-                        {
-                            string cmdline = NextCommandString();
-                            if (!CommandObject.TryExecuteCommand(cmdline, true, out _))
-                                CommandObject.ExecuteCommand(cmdline);
-                        }
-                        while (!CommandObject.TargetInstance.ToEndIf);
-                    }
-                    else
-                    {
-                        do
-                        {
-                            CommandObject.ExecuteCommand(NextCommandString(), true);
-                        }
-                        while (!CommandObject.TargetInstance.ToEndIf);
-                    }
-                }
-                [Command]
-                public void ElseIf(ObjectComparision comparision, string param)
-                {
-                    MyCommands.CommandObject.TargetInstance.If(comparision, param);
-                }
-                [Command]
-                public void ElseIf(int num1, ObjectComparision comparision, int num2)
-                {
-                    MyCommands.CommandObject.TargetInstance.If(num1, comparision, num2);
-                }
-                [Command]
-                public void ElseIf(float num1, ObjectComparision comparision, float num2)
-                {
-                    MyCommands.CommandObject.TargetInstance.If(num1, comparision, num2);
-                }
-                [Command]
-                public void ElseIf(double num1, ObjectComparision comparision, double num2)
-                {
-                    MyCommands.CommandObject.TargetInstance.If(num1, comparision, num2);
-                }
-                [Command]
-                public void ElseIf(string str1, ObjectComparision comparision, string str2)
-                {
-                    MyCommands.CommandObject.TargetInstance.If(str1, comparision, str2);
-                }
-                [Command]
-                public void Else()
-                {
-
-                }
-            }
-            public class ElseCommands
-            {
-                public static CommandObject<ElseCommands> CommandObject = new CommandObject<ElseCommands>();
-                public bool Src = false;
-                public bool ToEndIf = false;
-
-                [Command]
-                public void EndIf()
-                {
-                    ToEndIf = true;
-                }
             }
             public enum ObjectComparision
             {
@@ -195,26 +75,8 @@ namespace TestConsole
 
             void IfToDo(bool ok)
             {
-                IfCommands.CommandObject.TargetInstance.Src = ok;
-                IfCommands.CommandObject.TargetInstance.ToEndIf = false;
-                if (ok)
-                {
-                    do
-                    {
-                        string cmdline = NextCommandString();
-                        if (!CommandObject.TryExecuteCommand(cmdline, true, out _))
-                            IfCommands.CommandObject.ExecuteCommand(cmdline, true);
-                    }
-                    while (!IfCommands.CommandObject.TargetInstance.ToEndIf);
-                }
-                else
-                {
-                    do
-                    {
-                        IfCommands.CommandObject.ExecuteCommand(NextCommandString(), true);
-                    }
-                    while (!IfCommands.CommandObject.TargetInstance.ToEndIf);
-                }
+                IfCommands ifCommands = new IfCommands(Self, ok);
+                ifCommands.ProcessIf();
             }
             public void If(ObjectComparision comparision, string param)
             {
@@ -266,6 +128,7 @@ namespace TestConsole
                     _ => throw new ArgumentOutOfRangeException()
                 });
             }
+            [Command(typeof(ArguConverter), typeof(EnumArguConverter<ObjectComparision>), typeof(ArguConverter))]
             public void If(string str1, ObjectComparision comparision, string str2)
             {
                 IfToDo(comparision switch
