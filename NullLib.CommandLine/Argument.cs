@@ -2,47 +2,75 @@
 
 namespace NullLib.CommandLine
 {
+    /// <summary>
+    /// Argument of a command
+    /// </summary>
     public interface IArgument
     {
+        /// <summary>
+        /// Name of this Argument, if not specified, then null
+        /// </summary>
+        string Name { get; set; }
+        /// <summary>
+        /// String content of this Argument, when set, ValueObj also change
+        /// </summary>
         string Content { get; set; }
+        /// <summary>
+        /// Value object of this Argument, for converter to convert
+        /// </summary>
         object ValueObj { get; set; }
     }
-    public interface INamedArgument : IArgument
-    {
-        string Name { get; set; }
-    }
+    /// <summary>
+    /// Provide method for parsing commandline segments
+    /// </summary>
     public interface IArgumentParser
     {
-        bool TryParse(ref int index, ref CommandLineSegment[] arguments, out IArgument result);
+        /// <summary>
+        /// Try to parse an Argument from commandline segments
+        /// </summary>
+        /// <param name="index">Current index</param>
+        /// <param name="segments">Source segments</param>
+        /// <param name="result">Result Argument</param>
+        /// <returns>If this parsing was successed</returns>
+        bool TryParse(ref int index, ref CommandLineSegment[] segments, out IArgument result);
+        /// <summary>
+        /// Format param name and param default value to a standard format of current parser
+        /// </summary>
+        /// <param name="name">Param name</param>
+        /// <param name="defaultValue">Param default value</param>
+        /// <param name="result">Return result</param>
+        /// <returns>If action is successful</returns>
+        bool TryFormat(string name, string defaultValue, out string result);
     }
+    /// <summary>
+    /// Commandline segment splited by CommandParser
+    /// </summary>
     public class CommandLineSegment
     {
+        /// <summary>
+        /// If this segment was quoted
+        /// </summary>
         public bool Quoted;
+        /// <summary>
+        /// String content of this segment
+        /// </summary>
         public string Content;
 
+        /// <summary>
+        /// Initialize an instance
+        /// </summary>
+        /// <param name="content">String content of segment</param>
+        /// <param name="quoted">If the segment was quoted</param>
         public CommandLineSegment(string content, bool quoted)
         {
             Content = content;
             Quoted = quoted;
         }
     }
+    /// <summary>
+    /// Commandline argument
+    /// </summary>
     public class Argument : IArgument
-    {
-        private string content;
-        private object valueObj;
-
-        public string Content { get => content; set => valueObj = content = value; }
-        public object ValueObj { get => valueObj; set => valueObj = value; }
-
-        public Argument() { }
-
-        public Argument(string content)
-        {
-            this.content = content;
-            valueObj = content;
-        }
-    }
-    public class NamedArgument : INamedArgument, IArgument
     {
         private string name;
         private string content;
@@ -52,160 +80,28 @@ namespace NullLib.CommandLine
         public string Content { get => content; set => valueObj = content = value; }
         public object ValueObj { get => valueObj; set => valueObj = value; }
 
-        public NamedArgument() { }
+        /// <summary>
+        /// Initialize an instance, with null Name, null Content
+        /// </summary>
+        public Argument() { }
 
-        public NamedArgument(string name)
+        /// <summary>
+        /// Initialize an instance with specified content and null Name
+        /// </summary>
+        /// <param name="content">Argument content</param>
+        public Argument(string content)
         {
-            this.name = name;
-            this.content = string.Empty;
-            this.valueObj = string.Empty;
+            Content = content;
         }
-        public NamedArgument(string name, string content)
+        /// <summary>
+        /// Initialize an instance with specified name and content
+        /// </summary>
+        /// <param name="name">Argument name</param>
+        /// <param name="content">Argument content</param>
+        public Argument(string name, string content)
         {
-            this.name = name;
-            this.content = content;
-            this.valueObj = content;
-        }
-    }
-    public class ArguParser : IArgumentParser
-    {
-        public bool TryParse(ref int index, ref CommandLineSegment[] arguments, out IArgument result)
-        {
-            result = new Argument(arguments[index++].Content);
-            return true;
-        }
-    }
-    public class IdentifierArguParser : IArgumentParser
-    {
-        public bool IsIdentifier(string str)
-        {
-            if (str.Length < 1)
-                return false;
-
-            char curChar = str[0];
-            if (char.IsLetter(curChar) || curChar.Equals('_'))
-            {
-                bool result = true;
-                for (int i = 1, end = str.Length; i < end; i++)
-                {
-                    curChar = str[i];
-                    result &= char.IsLetterOrDigit(curChar) || curChar.Equals('_');
-                }
-                return result;
-            }
-            return false;
-        }
-        public bool TryParse(ref int index, ref CommandLineSegment[] arguments, out IArgument result)
-        {
-            result = null;
-            CommandLineSegment curSegment = arguments[index];
-            if (curSegment.Quoted)
-                return false;
-            if (!IsIdentifier(curSegment.Content))
-                return false;
-            result = new Argument(curSegment.Content);
-            index++;
-            return true;
-        }
-    }
-    public class StringArguParser : IArgumentParser
-    {
-        public bool TryParse(ref int index, ref CommandLineSegment[] arguments, out IArgument result)
-        {
-            CommandLineSegment curSegment = arguments[index];
-            if (curSegment.Quoted)
-            {
-                result = new Argument(curSegment.Content);
-                index++;
-                return true;
-            }
-            else
-            {
-                result = null;
-                return false;
-            }
-        }
-    }
-    public class FieldArguParser : IArgumentParser
-    {
-        private char triggerChar;
-
-        public char TriggerChar { get => triggerChar; set => triggerChar = value; }
-        public FieldArguParser()
-        {
-            TriggerChar = '=';
-        }
-        public FieldArguParser(char triggerChar)
-        {
-            TriggerChar = triggerChar;
-        }
-        public bool TryParse(ref int index, ref CommandLineSegment[] arguments, out IArgument result)
-        {
-            result = null;
-
-            if (index < arguments.Length)
-            {
-                CommandLineSegment name = arguments[index];
-                int eqindex = name.Content.IndexOf(triggerChar);   // the index of symbol 'equals': '='
-                if ((!name.Quoted) && eqindex > 0)
-                {
-                    if (eqindex + 1 < name.Content.Length)
-                    {
-                        result = new NamedArgument(name.Content.Substring(0, eqindex), name.Content.Substring(eqindex + 1));
-                        index++;
-                        return true;
-                    }
-                    else
-                    {
-                        if (index + 1 >= arguments.Length)
-                            return false;
-
-                        index++;
-                        CommandLineSegment content = arguments[index];
-                        result = new NamedArgument(name.Content.Substring(0, name.Content.Length - 1), content.Content);
-                        index++;
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-    }
-    public class PropertyArguParser : IArgumentParser
-    {
-        private string triggerString;
-
-        public string TriggerString { get => triggerString; set => triggerString = value; }
-        public PropertyArguParser()
-        {
-            this.TriggerString = "-";
-        }
-        public PropertyArguParser(string triggerString)
-        {
-            this.TriggerString = triggerString;
-        }
-        public bool TryParse(ref int index, ref CommandLineSegment[] arguments, out IArgument result)
-        {
-            result = null;
-
-            if (index < arguments.Length)
-            {
-                CommandLineSegment name = arguments[index];
-                if ((!name.Quoted) && name.Content.StartsWith(triggerString))
-                {
-                    if (index + 1 >= arguments.Length)
-                        return false;
-
-                    index++;
-                    CommandLineSegment content = arguments[index];
-                    result = new NamedArgument(name.Content.Substring(1), content.Content);
-                    index++;
-                    return true;
-                }
-            }
-
-            return false;
+            Name = name;
+            Content = content;
         }
     }
 }

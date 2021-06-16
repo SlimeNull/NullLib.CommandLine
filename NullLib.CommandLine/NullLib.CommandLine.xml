@@ -1,0 +1,329 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>NullLib.CommandLine</name>
+    </assembly>
+    <members>
+        <member name="T:NullLib.CommandLine.IArgument">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.IArgument.Name">
+            <summary>
+            Name of this Argument, if not specified, then null
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.IArgument.Content">
+            <summary>
+            String content of this Argument, when set, ValueObj also change
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.IArgument.ValueObj">
+            <summary>
+            Value object of this Argument, for converter to convert
+            </summary>
+        </member>
+        <member name="T:NullLib.CommandLine.IArgumentParser">
+            <summary>
+            Provide method for parsing commandline segments
+            </summary>
+        </member>
+        <member name="M:NullLib.CommandLine.IArgumentParser.TryParse(System.Int32@,NullLib.CommandLine.CommandLineSegment[]@,NullLib.CommandLine.IArgument@)">
+            <summary>
+            Try to parse an Argument from commandline segments
+            </summary>
+            <param name="index">Current index</param>
+            <param name="segments">Source segments</param>
+            <param name="result">Result Argument</param>
+            <returns>If this parsing was successed</returns>
+        </member>
+        <member name="T:NullLib.CommandLine.CommandLineSegment">
+            <summary>
+            Commandline segment splited by CommandParser
+            </summary>
+        </member>
+        <member name="F:NullLib.CommandLine.CommandLineSegment.Quoted">
+            <summary>
+            If this segment was quoted
+            </summary>
+        </member>
+        <member name="F:NullLib.CommandLine.CommandLineSegment.Content">
+            <summary>
+            String content of this segment
+            </summary>
+        </member>
+        <member name="M:NullLib.CommandLine.CommandLineSegment.#ctor(System.String,System.Boolean)">
+            <summary>
+            Initialize an instance
+            </summary>
+            <param name="content">String content of segment</param>
+            <param name="quoted">If the segment was quoted</param>
+        </member>
+        <member name="T:NullLib.CommandLine.Argument">
+            <summary>
+            Commandline argument
+            </summary>
+        </member>
+        <member name="M:NullLib.CommandLine.Argument.#ctor">
+            <summary>
+            Initialize an instance, with null Name, null Content
+            </summary>
+        </member>
+        <member name="M:NullLib.CommandLine.Argument.#ctor(System.String)">
+            <summary>
+            Initialize an instance with specified content and null Name
+            </summary>
+            <param name="content">Argument content</param>
+        </member>
+        <member name="M:NullLib.CommandLine.Argument.#ctor(System.String,System.String)">
+            <summary>
+            Initialize an instance with specified name and content
+            </summary>
+            <param name="name">Argument name</param>
+            <param name="content">Argument content</param>
+        </member>
+        <member name="T:NullLib.CommandLine.IArgumentConverter">
+            <summary>
+            Provide methods to convert string or string[] to required parameter type
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.IArgumentConverter.TargetType">
+            <summary>
+            TargetType of this converter
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.IArgumentConverter.IgnoreCases">
+            <summary>
+            Ignore cases when converting
+            </summary>
+        </member>
+        <member name="M:NullLib.CommandLine.IArgumentConverter.Convert(System.String)">
+            <summary>
+            Convert from a string
+            </summary>
+            <param name="argu">String to convert</param>
+            <returns>Conversion result</returns>
+        </member>
+        <member name="M:NullLib.CommandLine.IArgumentConverter.Convert(System.Object)">
+            <summary>
+            Convert from an object
+            </summary>
+            <param name="argu">Object to convert</param>
+            <returns>Conversion result</returns>
+        </member>
+        <member name="M:NullLib.CommandLine.IArgumentConverter.TryConvert(System.String,System.Object@)">
+            <summary>
+            Convert from a string
+            </summary>
+            <param name="argu">String to convert</param>
+            <param name="result">Conversion result</param>
+            <returns>If the Conversion was successed</returns>
+        </member>
+        <member name="M:NullLib.CommandLine.IArgumentConverter.TryConvert(System.Object,System.Object@)">
+            <summary>
+            Convert form an object
+            </summary>
+            <param name="argu">Object to convert</param>
+            <param name="result">Conversion result</param>
+            <returns>If the Conversion was successed</returns>
+        </member>
+        <member name="M:NullLib.CommandLine.IArgumentConverter`1.Convert(System.String)">
+            <summary>
+            Convert from a string
+            </summary>
+            <param name="argu">String to convert</param>
+            <returns>Conversion result</returns>
+        </member>
+        <member name="M:NullLib.CommandLine.IArgumentConverter`1.Convert(System.Object)">
+            <summary>
+            Convert from an object
+            </summary>
+            <param name="argu">Object to convert</param>
+            <returns>Conversion result</returns>
+        </member>
+        <member name="M:NullLib.CommandLine.IArgumentConverter`1.TryConvert(System.String,`0@)">
+            <summary>
+            Convert from a string
+            </summary>
+            <param name="argu">String to convert</param>
+            <param name="result">Conversion result</param>
+            <returns>If the Conversion was successed</returns>
+        </member>
+        <member name="M:NullLib.CommandLine.IArgumentConverter`1.TryConvert(System.Object,`0@)">
+            <summary>
+            Convert form an object
+            </summary>
+            <param name="argu">Object to convert</param>
+            <param name="result">Conversion result</param>
+            <returns>If the Conversion was successed</returns>
+        </member>
+        <member name="T:NullLib.CommandLine.ArgumentConverterManager">
+            <summary>
+            Provide methods for getting ArgumentConverter without initialize repeated converter
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.ArgumentConverterManager.AllConverters">
+            <summary>
+            Global converter storage
+            </summary>
+        </member>
+        <member name="M:NullLib.CommandLine.ArgumentConverterManager.GetConverter``1">
+            <summary>
+            Get from global storage or initialize a converter
+            </summary>
+            <typeparam name="T">Converter type</typeparam>
+            <returns>Result converter</returns>
+        </member>
+        <member name="M:NullLib.CommandLine.ArgumentConverterManager.GetConverter(System.Type)">
+            <summary>
+            Get from global storage or initialize a converter
+            </summary>
+            <param name="type">Converter type</param>
+            <returns>Result converter</returns>
+        </member>
+        <member name="T:NullLib.CommandLine.ArgumentConverterBase">
+            <summary>
+            Base class of ArgumentConverter
+            </summary>
+        </member>
+        <member name="T:NullLib.CommandLine.ArgumentConverterBase`1">
+            <summary>
+            Base class of ArgumentConverter
+            </summary>
+            <typeparam name="TTarget"></typeparam>
+        </member>
+        <member name="T:NullLib.CommandLine.ArguConverter">
+            <summary>
+            Default converter, return value without any conversion
+            </summary>
+        </member>
+        <member name="T:NullLib.CommandLine.BoolArguConverter">
+            <summary>
+            Bool converter, return true if "true", false if "false", otherwise, convert failed
+            </summary>
+        </member>
+        <member name="T:NullLib.CommandLine.ByteArguConverter">
+            <summary>
+            Byte convert, convert by byte.Parse and byte.TryParse
+            </summary>
+        </member>
+        <member name="T:NullLib.CommandLine.CharArguConverter">
+            <summary>
+            Char convert, if string has only one char, then return it, otherwise, convert failed
+            </summary>
+        </member>
+        <member name="T:NullLib.CommandLine.ShortArguConverter">
+            <summary>
+            Short converter, convert by short.Parse and short.TryParse
+            </summary>
+        </member>
+        <member name="T:NullLib.CommandLine.IntArguConverter">
+            <summary>
+            Int converter, convert by int.Parse and int.TryParse
+            </summary>
+        </member>
+        <member name="T:NullLib.CommandLine.LongArguConverter">
+            <summary>
+            Long converter, convert by long.Parse and long.TryParse
+            </summary>
+        </member>
+        <member name="T:NullLib.CommandLine.FloatArguConverter">
+            <summary>
+            Float converter, convert by float.Parse and float.TryParse
+            </summary>
+        </member>
+        <member name="T:NullLib.CommandLine.DoubleArguConverter">
+            <summary>
+            Double converter, convert by double.Parse and double.TryParse
+            </summary>
+        </member>
+        <member name="T:NullLib.CommandLine.BigIntArguConverter">
+            <summary>
+            BigInt converter, convert by BigInteger.Parse and BigInteger.TryParse
+            </summary>
+        </member>
+        <member name="T:NullLib.CommandLine.DecimalArguConverter">
+            <summary>
+            Decimal converter, convert by Decimal.Parse and Decimal.TryParse
+            </summary>
+        </member>
+        <member name="T:NullLib.CommandLine.EnumArguConverter`1">
+            <summary>
+            Enum converter, convert by Enum.Parse and Enum.TryParse
+            </summary>
+            <typeparam name="T">Enum type</typeparam>
+        </member>
+        <member name="T:NullLib.CommandLine.ForeachArguConverter`1">
+            <summary>
+            Convert from string[], use <typeparamref name="TConverter"/> to convert each element, only use in "params" parameter
+            </summary>
+            <typeparam name="TConverter">Converter to use</typeparam>
+        </member>
+        <member name="T:NullLib.CommandLine.CommandAttribute">
+            <summary>
+            Specify a method can be execute by 
+            </summary>
+        </member>
+        <member name="M:NullLib.CommandLine.CommandAttribute.#ctor">
+            <summary>
+            Initialize a new instance of CommandAttribute with no special IArgumentConverter
+            If your method only has string parameters, you can use this.
+            </summary>
+        </member>
+        <member name="M:NullLib.CommandLine.CommandAttribute.#ctor(System.Type[])">
+            <summary>
+            Initialize a new instance of CommandAttribute
+            </summary>
+            <param name="arguConverters"></param>
+        </member>
+        <member name="T:NullLib.CommandLine.CommandObject">
+            <summary>
+            CommandObject is used for calling method by command line.
+            </summary>
+        </member>
+        <member name="M:NullLib.CommandLine.CommandObject.ExecuteCommand(System.String)">
+            <summary>
+            ExecuteCommand with <typeref name="cmdline"/>, defalt parsers, not ignore cases
+            </summary>
+            <param name="cmdline"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NullLib.CommandLine.CommandObject`1.#ctor">
+            <summary>
+            Initialize an CommandObject instance, and set the TargetInstance property as a new instance initialized by the default constructor of <typeparamref name="T"/>
+            </summary>
+        </member>
+        <member name="M:NullLib.CommandLine.CommandObject`1.#ctor(`0)">
+            <summary>
+            Initialize an CommandObject instance, and set the param <paramref name="instance"/> as TargetInstance
+            </summary>
+            <param name="instance"></param>
+        </member>
+        <member name="T:NullLib.CommandLine.CommandParser">
+            <summary>
+            Provide methods for parsing command
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.CommandParser.DefaultParsers">
+            <summary>
+            Default parsers for parse commandline string.
+            </summary>
+        </member>
+        <member name="M:NullLib.CommandLine.CommandParser.SplitCommandLine(System.String,NullLib.CommandLine.CommandLineSegment[]@)">
+            <summary>
+            Split commandline string to CommandLineSegment[]
+            </summary>
+            <param name="str">commandline string</param>
+            <returns>Splitting result</returns>
+        </member>
+        <member name="M:NullLib.CommandLine.CommandParser.SplitCommandInfo(NullLib.CommandLine.CommandLineSegment[],System.String@,NullLib.CommandLine.CommandLineSegment[]@)">
+            <summary>
+            Seperate command name and command arguments from commandline segements.
+            </summary>
+            <param name="segments">Source commandline segments</param>
+            <param name="cmdname">Commandline name</param>
+            <param name="arguments">Commandline arguments</param>
+        </member>
+    </members>
+</doc>

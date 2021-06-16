@@ -7,32 +7,112 @@ using System.Reflection;
 
 namespace NullLib.CommandLine
 {
+    /// <summary>
+    /// Provide methods to convert string or string[] to required parameter type
+    /// </summary>
     public interface IArgumentConverter
     {
+        /// <summary>
+        /// TargetType of this converter
+        /// </summary>
         Type TargetType { get; }
-        object Convert(string argument);
-        object Convert(object argument);
-        bool TryConvert(string argument, out object result);
-        bool TryConvert(object argument, out object result);
+
+        /// <summary>
+        /// Ignore cases when converting
+        /// </summary>
+        bool IgnoreCases { get; set; }
+
+        /// <summary>
+        /// Convert from a string
+        /// </summary>
+        /// <param name="argu">String to convert</param>
+        /// <returns>Conversion result</returns>
+        object Convert(string argu);
+        /// <summary>
+        /// Convert from an object
+        /// </summary>
+        /// <param name="argu">Object to convert</param>
+        /// <returns>Conversion result</returns>
+        object Convert(object argu);
+        string ConvertBack(object obj);
+        /// <summary>
+        /// Convert from a string
+        /// </summary>
+        /// <param name="argu">String to convert</param>
+        /// <param name="result">Conversion result</param>
+        /// <returns>If the Conversion was successed</returns>
+        bool TryConvert(string argu, out object result);
+        /// <summary>
+        /// Convert form an object
+        /// </summary>
+        /// <param name="argu">Object to convert</param>
+        /// <param name="result">Conversion result</param>
+        /// <returns>If the Conversion was successed</returns>
+        bool TryConvert(object argu, out object result);
+        bool TryConvertBack(object obj, out string result);
     }
+    /// <summary>
+    /// Provide methods to convert string or string[] to <typeparamref name="TResult"/>
+    /// </summary>
+    /// <typeparam name="TResult"></typeparam>
     public interface IArgumentConverter<TResult> : IArgumentConverter
     {
-        new TResult Convert(string argument);
-        new TResult Convert(object argument);
-        bool TryConvert(string argument, out TResult result);
-        bool TryConvert(object argument, out TResult result);
+        /// <summary>
+        /// Convert from a string
+        /// </summary>
+        /// <param name="argu">String to convert</param>
+        /// <returns>Conversion result</returns>
+        new TResult Convert(string argu);
+        /// <summary>
+        /// Convert from an object
+        /// </summary>
+        /// <param name="argu">Object to convert</param>
+        /// <returns>Conversion result</returns>
+        new TResult Convert(object argu);
+        string ConvertBack(TResult obj);
+        /// <summary>
+        /// Try to convert from a string
+        /// </summary>
+        /// <param name="argu">String to convert</param>
+        /// <param name="result">Conversion result</param>
+        /// <returns>If the Conversion was successed</returns>
+        bool TryConvert(string argu, out TResult result);
+        /// <summary>
+        /// Try to convert from a object
+        /// </summary>
+        /// <param name="argu"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        bool TryConvert(object argu, out TResult result);
+        bool TryConvertBack(TResult obj, out string result);
     }
 
+    /// <summary>
+    /// Provide methods for getting ArgumentConverter without initialize repeated converter
+    /// </summary>
     public static class ArgumentConverterManager
     {
         private static Type IArgumentConverterType = typeof(IArgumentConverter);
-        public static Dictionary<Type, IArgumentConverter> AllConverters = new Dictionary<Type, IArgumentConverter>();
+        /// <summary>
+        /// Global converter storage
+        /// </summary>
+        public static Dictionary<Type, IArgumentConverter> AllConverters { get; } = new Dictionary<Type, IArgumentConverter>();
 
+        /// <summary>
+        /// Get from global storage or initialize a converter
+        /// </summary>
+        /// <typeparam name="T">Converter type</typeparam>
+        /// <returns>Result converter</returns>
         public static IArgumentConverter GetConverter<T>() where T : IArgumentConverter
         {
             Type type = typeof(T);
             return AllConverters.TryGetValue(type, out var result) ? result : AllConverters[type] = Activator.CreateInstance<T>();
         }
+        /// <summary>
+        /// Get from global storage or initialize a converter
+        /// </summary>
+        /// <param name="type">Converter type</param>
+        /// <returns>Result converter</returns>
         public static IArgumentConverter GetConverter(Type type)
         {
             if (type == null)
@@ -52,26 +132,35 @@ namespace NullLib.CommandLine
         }
     }
 
-    public abstract class ArgumentConverter : IArgumentConverter
+    /// <summary>
+    /// Base class of ArgumentConverter
+    /// </summary>
+    public abstract class ArgumentConverterBase : IArgumentConverter
     {
         private Type targetType = typeof(string);
         public virtual Type TargetType { get => targetType; }
 
-        public virtual object Convert(string argument)
+        public virtual bool IgnoreCases { get; set; }
+
+        public virtual object Convert(string argu)
         {
-            return argument;
+            return argu;
+        }
+        public virtual object Convert(object argu)
+        {
+            return argu;
         }
 
-        public virtual object Convert(object argument)
+        public virtual string ConvertBack(object obj)
         {
-            return argument;
+            return obj.ToString();
         }
 
-        public virtual bool TryConvert(string argument, out object result)
+        public virtual bool TryConvert(string argu, out object result)
         {
             try
             {
-                result = Convert(argument);
+                result = Convert(argu);
                 return true;
             }
             catch
@@ -80,12 +169,16 @@ namespace NullLib.CommandLine
                 return false;
             }
         }
+        public virtual bool TryConvert(object argu, out object result)
+        {
+            return TryConvert(argu as string, out result);
+        }
 
-        public virtual bool TryConvert(object argument, out object result)
+        public virtual bool TryConvertBack(object obj, out string result)
         {
             try
             {
-                result = Convert(argument);
+                result = ConvertBack(obj);
                 return true;
             }
             catch
@@ -95,26 +188,43 @@ namespace NullLib.CommandLine
             }
         }
     }
-    public abstract class ArgumentConverter<TTarget> : IArgumentConverter<TTarget>
+    /// <summary>
+    /// Base class of ArgumentConverter
+    /// </summary>
+    /// <typeparam name="TTarget"></typeparam>
+    public abstract class ArgumentConverterBase<TTarget> : IArgumentConverter<TTarget>
     {
         private static Type targetType = typeof(TTarget);
-
         public Type TargetType { get => targetType; }
 
-        public virtual TTarget Convert(string argument)
+        public virtual bool IgnoreCases { get; set; }
+
+        public virtual TTarget Convert(string argu)
         {
             return default;
         }
-        public virtual TTarget Convert(object argument)
+        public virtual TTarget Convert(object argu)
         {
-            return Convert(argument as string);
+            return Convert(argu as string);
         }
 
-        public virtual bool TryConvert(string argument, out TTarget result)
+        public virtual string ConvertBack(TTarget obj)
+        {
+            return obj.ToString();
+        }
+        public virtual string ConvertBack(object obj)
+        {
+            if (obj is TTarget tobj)
+                return ConvertBack(tobj);
+            else
+                return ConvertBack(default);
+        }
+
+        public virtual bool TryConvert(string argu, out TTarget result)
         {
             try
             {
-                result = Convert(argument);
+                result = Convert(argu);
                 return true;
             }
             catch
@@ -123,109 +233,118 @@ namespace NullLib.CommandLine
                 return false;
             }
         }
-        public virtual bool TryConvert(string argument, out object result)
+        public virtual bool TryConvert(string argu, out object result)
         {
-            bool succ = TryConvert(argument, out TTarget resultT);
+            bool succ = TryConvert(argu, out TTarget resultT);
             result = resultT;
             return succ;
         }
 
-        public virtual bool TryConvert(object argument, out TTarget result)
+        public virtual bool TryConvert(object argu, out TTarget result)
         {
-            return TryConvert(argument as string, out result);
+            return TryConvert(argu as string, out result);
         }
-        public virtual bool TryConvert(object argument, out object result)
+        public virtual bool TryConvert(object argu, out object result)
         {
-            if (TryConvert(argument, out TTarget rst))
+            return TryConvert(argu as string, out result);
+        }
+
+        public virtual bool TryConvertBack(TTarget obj, out string result)
+        {
+            try
             {
-                result = rst;
+                result = ConvertBack(obj);
                 return true;
             }
-            else
+            catch
             {
                 result = null;
                 return false;
             }
         }
-
-        object IArgumentConverter.Convert(string argument)
+        public virtual bool TryConvertBack(object obj, out string result)
         {
-            return Convert(argument);
+            if (obj is TTarget tobj)
+                return TryConvertBack(tobj, out result);
+            else
+                return TryConvertBack(default, out result);
         }
-        object IArgumentConverter.Convert(object argument)
+
+        object IArgumentConverter.Convert(string argu)
         {
-            return Convert(argument);
+            return Convert(argu);
+        }
+        object IArgumentConverter.Convert(object argu)
+        {
+            return Convert(argu);
         }
     }
 
-    public class ArguConverter : ArgumentConverter<string>
+    /// <summary>
+    /// Default converter, return value without any conversion
+    /// </summary>
+    public class ArguConverter : ArgumentConverterBase<string>
     {
-        public override string Convert(string argument)
+        public override string Convert(string argu)
         {
-            return argument;
+            return argu;
         }
-        public override bool TryConvert(string argument, out string result)
+        public override bool TryConvert(string argu, out string result)
         {
-            result = argument;
+            result = argu;
             return true;
         }
     }
 
-    public class BoolArguConverter : ArgumentConverter<bool>
+    /// <summary>
+    /// Bool converter, return true if "true", false if "false", otherwise, convert failed
+    /// </summary>
+    public class BoolArguConverter : ArgumentConverterBase<bool>
     {
-        public override bool Convert(string argument)
+        public override bool Convert(string argu)
         {
-            return argument.Equals("true", StringComparison.OrdinalIgnoreCase) ? true :
-                argument.Equals("false", StringComparison.OrdinalIgnoreCase) ? false :
-                throw new ArgumentOutOfRangeException(nameof(argument), "Cannot convert argument");
+            return bool.Parse(argu);
         }
-        public override bool TryConvert(string argument, out bool result)
+        public override bool TryConvert(string argu, out bool result)
         {
-            if (argument.Equals("true", StringComparison.OrdinalIgnoreCase))
-            {
-                result = true;
-                return true;
-            }
-            else if (argument.Equals("false", StringComparison.OrdinalIgnoreCase))
-            {
-                result = false;
-                return true;
-            }
-            {
-                result = false;
-                return false;
-            }
+            return bool.TryParse(argu, out result);
         }
     }
-    public class ByteArguConverter : ArgumentConverter<byte>
+    /// <summary>
+    /// Byte convert, convert by byte.Parse and byte.TryParse
+    /// </summary>
+    public class ByteArguConverter : ArgumentConverterBase<byte>
     {
-        public override byte Convert(string argument)
+        public override byte Convert(string argu)
         {
-            return byte.Parse(argument);
+            return byte.Parse(argu);
         }
-        public override bool TryConvert(string argument, out byte result)
+        public override bool TryConvert(string argu, out byte result)
         {
-            return byte.TryParse(argument, out result);
+            return byte.TryParse(argu, out result);
         }
     }
-    public class CharArguConverter : ArgumentConverter<char>
+    /// <summary>
+    /// Char convert, if string has only one char, then return it, otherwise, convert failed
+    /// </summary>
+    public class CharArguConverter : ArgumentConverterBase<char>
     {
-        public override char Convert(string argument)
+        public override char Convert(string argu)
         {
-            if (argument.Length == 1)
+            if (argu.Length == 1)
             {
-                return argument[0];
+                return argu[0];
             }
             else
             {
-                throw new ArgumentOutOfRangeException(nameof(argument), "Cannot convert argument");
+                throw new ArgumentOutOfRangeException(nameof(argu), "Cannot convert argument");
             }
         }
-        public override bool TryConvert(string argument, out char result)
+        public override bool TryConvert(string argu, out char result)
         {
-            if (argument.Length == 1)
+            if (argu.Length == 1)
             {
-                result = argument[0];
+                result = argu[0];
                 return true;
             }
             else
@@ -235,95 +354,124 @@ namespace NullLib.CommandLine
             }
         }
     }
-    public class ShortArguConverter : ArgumentConverter<short>
+    /// <summary>
+    /// Short converter, convert by short.Parse and short.TryParse
+    /// </summary>
+    public class ShortArguConverter : ArgumentConverterBase<short>
     {
-        public override short Convert(string argument)
+        public override short Convert(string argu)
         {
-            return short.Parse(argument);
+            return short.Parse(argu);
         }
-        public override bool TryConvert(string argument, out short result)
+        public override bool TryConvert(string argu, out short result)
         {
-            return short.TryParse(argument, out result);
+            return short.TryParse(argu, out result);
         }
     }
-    public class IntArguConverter : ArgumentConverter<int>
+    /// <summary>
+    /// Int converter, convert by int.Parse and int.TryParse
+    /// </summary>
+    public class IntArguConverter : ArgumentConverterBase<int>
     {
-        public override int Convert(string argument)
+        public override int Convert(string argu)
         {
-            return int.Parse(argument);
+            return int.Parse(argu);
         }
-        public override bool TryConvert(string argument, out int result)
+        public override bool TryConvert(string argu, out int result)
         {
-            return int.TryParse(argument, out result);
+            return int.TryParse(argu, out result);
         }
     }
-    public class LongArguConverter : ArgumentConverter<long>
+    /// <summary>
+    /// Long converter, convert by long.Parse and long.TryParse
+    /// </summary>
+    public class LongArguConverter : ArgumentConverterBase<long>
     {
-        public override long Convert(string argument)
+        public override long Convert(string argu)
         {
-            return long.Parse(argument);
+            return long.Parse(argu);
         }
-        public override bool TryConvert(string argument, out long result)
+        public override bool TryConvert(string argu, out long result)
         {
-            return long.TryParse(argument, out result);
+            return long.TryParse(argu, out result);
         }
     }
-    public class FloatArguConverter : ArgumentConverter<float>
+    /// <summary>
+    /// Float converter, convert by float.Parse and float.TryParse
+    /// </summary>
+    public class FloatArguConverter : ArgumentConverterBase<float>
     {
-        public override float Convert(string argument)
+        public override float Convert(string argu)
         {
-            return float.Parse(argument);
+            return float.Parse(argu);
         }
-        public override bool TryConvert(string argument, out float result)
+        public override bool TryConvert(string argu, out float result)
         {
-            return float.TryParse(argument, out result);
+            return float.TryParse(argu, out result);
         }
     }
-    public class DoubleArguConverter : ArgumentConverter<double>
+    /// <summary>
+    /// Double converter, convert by double.Parse and double.TryParse
+    /// </summary>
+    public class DoubleArguConverter : ArgumentConverterBase<double>
     {
-        public override double Convert(string argument)
+        public override double Convert(string argu)
         {
-            return double.Parse(argument);
+            return double.Parse(argu);
         }
-        public override bool TryConvert(string argument, out double result)
+        public override bool TryConvert(string argu, out double result)
         {
-            return double.TryParse(argument, out result);
+            return double.TryParse(argu, out result);
         }
     }
-    public class BigIntArguConverter : ArgumentConverter<BigInteger>
+    /// <summary>
+    /// BigInt converter, convert by BigInteger.Parse and BigInteger.TryParse
+    /// </summary>
+    public class BigIntArguConverter : ArgumentConverterBase<BigInteger>
     {
-        public override BigInteger Convert(string argument)
+        public override BigInteger Convert(string argu)
         {
-            return BigInteger.Parse(argument);
+            return BigInteger.Parse(argu);
         }
-        public override bool TryConvert(string argument, out BigInteger result)
+        public override bool TryConvert(string argu, out BigInteger result)
         {
-            return BigInteger.TryParse(argument, out result);
+            return BigInteger.TryParse(argu, out result);
         }
     }
-    public class DecimalArguConverter : ArgumentConverter<decimal>
+    /// <summary>
+    /// Decimal converter, convert by Decimal.Parse and Decimal.TryParse
+    /// </summary>
+    public class DecimalArguConverter : ArgumentConverterBase<decimal>
     {
-        public override decimal Convert(string argument)
+        public override decimal Convert(string argu)
         {
-            return decimal.Parse(argument);
+            return decimal.Parse(argu);
         }
-        public override bool TryConvert(string argument, out decimal result)
+        public override bool TryConvert(string argu, out decimal result)
         {
-            return decimal.TryParse(argument, out result);
+            return decimal.TryParse(argu, out result);
         }
     }
-    public class EnumArguConverter<T> : ArgumentConverter<T> where T : struct
+    /// <summary>
+    /// Enum converter, convert by Enum.Parse and Enum.TryParse
+    /// </summary>
+    /// <typeparam name="T">Enum type</typeparam>
+    public class EnumArguConverter<T> : ArgumentConverterBase<T> where T : struct
     {
-        public override T Convert(string argument)
+        public override T Convert(string argu)
         {
-            return (T)Enum.Parse(typeof(T), argument);
+            return (T)Enum.Parse(TargetType, argu, IgnoreCases);
         }
-        public override bool TryConvert(string argument, out T result)
+        public override bool TryConvert(string argu, out T result)
         {
-            return Enum.TryParse(argument, out result);
+            return Enum.TryParse(argu, IgnoreCases, out result);
         }
     }
-    public class ForeachArguConverter<TConverter> : ArgumentConverter where TConverter : IArgumentConverter
+    /// <summary>
+    /// Convert from string[], use <typeparamref name="TConverter"/> to convert each element, only use in "params" parameter
+    /// </summary>
+    /// <typeparam name="TConverter">Converter to use</typeparam>
+    public class ForeachArguConverter<TConverter> : ArgumentConverterBase where TConverter : IArgumentConverter
     {
         public override Type TargetType => targetType; IArgumentConverter converter;
         private readonly Type targetType;
@@ -333,19 +481,21 @@ namespace NullLib.CommandLine
             converter = ArgumentConverterManager.GetConverter<TConverter>();
             targetType = converter.TargetType.MakeArrayType();
         }
-        public override object Convert(string argument)
+        public override object Convert(string argu)
         {
+            converter.IgnoreCases = IgnoreCases;
             Array result = Array.CreateInstance(converter.TargetType, 1);
-            result.SetValue(converter.Convert(argument), 0);
+            result.SetValue(converter.Convert(argu), 0);
             return result;
         }
-        public override object Convert(object argument)
+        public override object Convert(object argu)
         {
-            if (argument is string str)
+            converter.IgnoreCases = IgnoreCases;
+            if (argu is string str)
             {
                 return Convert(str);
             }
-            else if (argument is string[] strs)
+            else if (argu is string[] strs)
             {
                 Array result = Array.CreateInstance(converter.TargetType, strs.Length);
                 for (int i = 0, end = strs.Length; i < end; i++)
@@ -354,12 +504,13 @@ namespace NullLib.CommandLine
             }
             else
             {
-                throw new ArgumentOutOfRangeException(nameof(argument), "Cannot convert argument");
+                throw new ArgumentOutOfRangeException(nameof(argu), "Cannot convert argument");
             }
         }
-        public override bool TryConvert(string argument, out object result)
+        public override bool TryConvert(string argu, out object result)
         {
-            if (converter.TryConvert(argument, out object rst))
+            converter.IgnoreCases = IgnoreCases;
+            if (converter.TryConvert(argu, out object rst))
             {
                 Array resultarr = Array.CreateInstance(converter.TargetType, 1);
                 resultarr.SetValue(rst, 0);
@@ -372,13 +523,14 @@ namespace NullLib.CommandLine
                 return false;
             }
         }
-        public override bool TryConvert(object argument, out object result)
+        public override bool TryConvert(object argu, out object result)
         {
-            if (argument is string str)
+            converter.IgnoreCases = IgnoreCases;
+            if (argu is string str)
             {
                 return TryConvert(str, out result);
             }
-            else if (argument is string[] strs)
+            else if (argu is string[] strs)
             {
                 bool succeed = true;
                 Array resultarray = Array.CreateInstance(converter.TargetType, strs.Length);
@@ -399,17 +551,15 @@ namespace NullLib.CommandLine
             }
         }
     }
-
-    public class CharArrayArguConverter : ArgumentConverter<char[]>
+    /// <summary>
+    /// Char[] converter, convert string to char[]
+    /// </summary>
+    public class CharArrayArguConverter : ArgumentConverterBase<char[]>
     {
-        public override char[] Convert(string argument)
+        public override char[] Convert(string argu)
         {
-            return argument.ToCharArray();
+            return argu.ToCharArray();
         }
-        public override bool TryConvert(string argument, out char[] result)
-        {
-            result = argument.ToCharArray();
-            return true;
-        }
+        // do not need to override TryConvert
     }
 }

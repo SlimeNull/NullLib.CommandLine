@@ -31,8 +31,15 @@ namespace TestConsole
                             do
                             {
                                 string cmdline = NextCommandString();
-                                if (!Self.TryExecuteCommand(cmdline, true, out _) && !Root.CanExecuteCommand(cmdline, true))
-                                    throw new SyntaxException();
+                                try
+                                {
+                                    STDOUT = Self.ExecuteCommand(cmdline, true);
+                                }
+                                catch (CommandException)
+                                {
+                                    if (!Root.CanExecuteCommand(cmdline, true))
+                                        throw new CommandEntryPointNotFoundException();
+                                }
                             }
                             while (!ToEndIf);
                         }
@@ -43,8 +50,14 @@ namespace TestConsole
                                 do
                                 {
                                     string cmdline = NextCommandString();
-                                    if (!Self.TryExecuteCommand(cmdline, true, out _))
-                                        Root.ExecuteCommand(cmdline, true);
+                                    try
+                                    {
+                                        STDOUT = Self.ExecuteCommand(cmdline, true);
+                                    }
+                                    catch (CommandException)
+                                    {
+                                        STDOUT = Root.ExecuteCommand(cmdline, true);
+                                    }
                                 }
                                 while (!ToEndIf);
                             }
@@ -53,8 +66,15 @@ namespace TestConsole
                                 do
                                 {
                                     string cmdline = NextCommandString();
-                                    if (!Self.TryExecuteCommand(cmdline, true, out _) && !Root.CanExecuteCommand(cmdline, true))
-                                        throw new SyntaxException();
+                                    try
+                                    {
+                                        STDOUT = Self.ExecuteCommand(cmdline, true);
+                                    }
+                                    catch (CommandException)
+                                    {
+                                        if (!Root.CanExecuteCommand(cmdline, true))
+                                            throw new CommandEntryPointNotFoundException();
+                                    }
                                 }
                                 while (!ToEndIf);
                             }
@@ -64,13 +84,7 @@ namespace TestConsole
                     public void ElseIfToDo(bool value)
                     {
                         ElseIfCommands elseIfCommands = new ElseIfCommands(Root, ExpSrc, value);
-                        do
-                        {
-                            string cmdline = NextCommandString();
-                            if (!elseIfCommands.Self.TryExecuteCommand(cmdline, true, out _))
-                                elseIfCommands.Root.ExecuteCommand(cmdline, true);
-                        }
-                        while (elseIfCommands.ToEndIf);
+                        elseIfCommands.ProcessElseIf();
                         ToEndIf = true;
                     }
 
@@ -83,27 +97,27 @@ namespace TestConsole
 
                     #region ElseIfCommands_ElseIf
                     [Command]
-                    public void ElseIf(ObjectComparision comparision, string param)
+                    public void ElseIf(ObjectComparison comparision, string param)
                     {
                         ElseIfToDo(IfCommands.CheckIf(comparision, param));
                     }
                     [Command]
-                    public void ElseIf(int num1, ObjectComparision comparision, int num2)
+                    public void ElseIf(int num1, ObjectComparison comparision, int num2)
                     {
                         ElseIfToDo(CheckIf(num1, comparision, num2));
                     }
                     [Command]
-                    public void ElseIf(float num1, ObjectComparision comparision, float num2)
+                    public void ElseIf(float num1, ObjectComparison comparision, float num2)
                     {
                         ElseIfToDo(CheckIf(num1, comparision, num2));
                     }
                     [Command]
-                    public void ElseIf(double num1, ObjectComparision comparision, double num2)
+                    public void ElseIf(double num1, ObjectComparison comparision, double num2)
                     {
                         ElseIfToDo(CheckIf(num1, comparision, num2));
                     }
                     [Command]
-                    public void ElseIf(string str1, ObjectComparision comparision, string str2)
+                    public void ElseIf(string str1, ObjectComparison comparision, string str2)
                     {
                         ElseIfToDo(CheckIf(str1, comparision, str2));
                     }

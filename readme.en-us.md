@@ -182,13 +182,7 @@ To split a command line string to CommandLineSegment[], use `CommandParser.Split
 
 ## Argument
 
-1. Argument:
-
-   The basic Argument type, with no name, implemented `IArgument`, when invoking method, will be passed one by one.
-
-2. NamedArgument:
-
-   Argument with name, when invoking method, will be passed according it's name to a correct position.
+Argument of command, can have a name, implemented `IArgument`, when invoking method, will be passed.
 
 
 
@@ -210,11 +204,11 @@ Here is all build-in `ArgumentParsers`:
 
 4. FieldArguParser:
 
-   It can parse a segment like <u>*name=value*</u> or two segments like <u>*name= value*</u> to a `NamedArgument`, also, you can specify the separator, default is '='.
+   It can parse a segment like <u>*name=value*</u> or two segments like <u>*name= value*</u> to a `Argument`, also, you can specify the separator, default is '='.
 
 5. PropertyArguParser:
 
-   It can parse two segments like <u>*-name value*</u> to a NamedArgument, and you can also specify the start string of <u>*name*</u>, default is "-".
+   It can parse two segments like <u>*-name value*</u> to a `Argument`, and you can also specify the start string of <u>*name*</u>, default is "-".
 
 
 
@@ -263,7 +257,6 @@ Here is all build-in `ArgumentConverter`:
 14. CharArrayArguConverter:
 
     Helps convert to char array, it calls `string.ToCharArray()` to do conversion.
-    
 
 
 ## About ArgumentParser
@@ -304,7 +297,7 @@ So, if you inherit `ArgumentConverter<T>`, you just need to override these two m
 
 ### Tips:
 
-1. DO NOT create a `ArgumentConverter` with new expression, use `ArgumentConverterManager.GetConverter<T>()`.
+1. Do NOT create a `ArgumentConverter` with new expression, use `ArgumentConverterManager.GetConverter<T>()`.
 
 
 
@@ -313,7 +306,7 @@ So, if you inherit `ArgumentConverter<T>`, you just need to override these two m
 1. When I calling `CommandObject.ExecuteCommand(IArgumentParser[] parsers, string cmdline)`, but some of parsers don't work:
 
    ```csharp
-   // you must specify parsers in a correct order, for example:
+   // you must specify parsers in a correct order, or it will like this:
    CommandObject<AppCommands> myCmds = new CommandObject<AppCommands>();
    myCmds.ExecuteCommand(new IArgumentParser[]
    {
@@ -322,5 +315,4 @@ So, if you inherit `ArgumentConverter<T>`, you just need to override these two m
        new PropertyArguParser()         // so you should place ArguParser as the last parser.
    }, Console.ReadLine());
    ```
-
 

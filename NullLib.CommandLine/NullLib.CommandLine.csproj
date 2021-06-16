@@ -9,11 +9,15 @@
     <Description>CommandLine! Calling a C# Method with a CommandLine string, with this library, you can do that easily and you don't have to write code for parsing the CommandLine string.
 命令行! 通过命令行字符串来调用 C# 中的函数吧, 有了这个库, 你可以轻松的实现上述功能, 并且完全你不需要自己手动写代码去分析命令行字符串</Description>
     <Copyright>Copyright 2021 Null</Copyright>
-    <Version>1.0.6.1</Version>
+    <Version>1.0.6.2</Version>
 	  <LangVersion>latest</LangVersion>
     <PackageProjectUrl>https://github.com/SlimeNull/NullLib.CommandHelper</PackageProjectUrl>
     <RepositoryUrl>https://github.com/SlimeNull/NullLib.CommandHelper</RepositoryUrl>
     <RepositoryType>Github</RepositoryType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>C:\Users\Null\source\repos\NullLib.CommandLine\NullLib.CommandLine\NullLib.CommandLine.xml</DocumentationFile>
   </PropertyGroup>
 
 </Project>

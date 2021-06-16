@@ -138,83 +138,77 @@ False
 
 2. CommandObject:
 
-   Class for invoking methods by command string.
+   用于使用命令行字符串调用方法的类
 
 3. CommandInvoker:
 
-   Helps invoking methods by `IArguments`.
+   帮助通过 `IArguments` 调用方法
 
 4. CommandParser:
 
-   Helps to parse a command string for method calling.
+   帮助分析命令行字符串以调用方法
 
 5. ArgumentConverter:
 
-   Implemented `IArgumentConverter` interface, abstract class, should be inherited by custom Converter.
+   继承 `IArgumentConverter` 接口, 抽象类, 应该被自定义转换器继承
 
 6. ArgumentConverterManager:
 
-   Helps create `ArgumentConverter` rapidly.
+   帮助快速创建 `ArgumentConverter`
 
 7. CommandLineSegment:
 
-   Component of command line string.
+   命令行字符串的构成部分
 
 8. ArgumentParser:
 
-   Helps parse `CommandLineSegment` to `IArgument`
+   帮助将 `CommandLineSegment` 分析为 `IArgument`
 
 
 
 ## CommandLineSegment
 
-CommandLineSegment is a component of command line string.
+CommandLineSegment 是命令行字符串的组成部分
 
-For example, in `myprogram param1 "param2"`, there is three CommandLineSegment:
+例如, 在 `myprogram param1 "param2"` 中, 有三个 CommandLineSegment:
 
 1. {Quoted: false, Content: "myprogram"}
 2. {Quoted: false, Content: "param1"}
 3. {Quoted: true, Content: "\\"param2\\""}
 
-To split a command line string to CommandLineSegment[], use `CommandParser.SplitCommandLine(string str)`
+将命令行字符串分割为 CommandLineSegment[], 使用 `CommandParser.SplitCommandLine(string str)`
 
 
 
 ## Argument
 
-1. Argument:
-
-   The basic Argument type, with no name, implemented `IArgument`, when invoking method, will be passed one by one.
-
-2. NamedArgument:
-
-   Argument with name, when invoking method, will be passed according it's name to a correct position.
+命令的参数, 可有名称, 继承 `IArgument`, 当调用方法时, 将会被传递
 
 
 
 ## ArgumentParser
 
-Here is all build-in `ArgumentParsers`:
+下面是所有内置的 `ArgumentParsers`
 
 1. ArguParser:
 
-   It can parse any segment as an Argument.
+   可将任何部分分析为一个 `Argument`
    
 2. IdentifierArguParser:
 
-   It can parse an identifier segment as an `Argument`. The corresponding regex string is *"{A-Za-z\_}{A-Za-z0-9\_}\*"*
+   可将一个标识符部分分析为一个 `Argument`. 对应的正则表达式是 *"{A-Za-z\_}{A-Za-z0-9\_}\*"*
 
 3. StringArguParser:
 
-   It can parse any segments as an `Argument`, but the segment must be `Quoted`.
+   可以将任何 Quoted(被双引号包围的) 部分分析为 `Argument`
 
 4. FieldArguParser:
 
-   It can parse a segment like <u>*name=value*</u> or two segments like <u>*name= value*</u> to a `NamedArgument`, also, you can specify the separator, default is '='.
+   可以将像 <u>*name=value*</u> 的一个部分, 或者像 <u>*name= value*</u> 的两个部分分析为一个 `Argument`, 另外, 你可以指定分隔符, 默认分隔符是 '='
 
 5. PropertyArguParser:
 
-   It can parse two segments like <u>*-name value*</u> to a NamedArgument, and you can also specify the start string of <u>*name*</u>, default is "-".
+   可以将像 <u>*-name value*</u> 的两个部分分析为 `Argument`, 并且你也可以指定 <u>*name*</u> 的起始字符串, 默认是 "-"
 
 
 
@@ -224,15 +218,15 @@ Here is all build-in `ArgumentConverter`:
 
 1. ArguConverter:
 
-   The default `ArgumentConverter` which returns the source value without any conversion
+   不会做任何转换而直接返回源值的默认的 `ArgumentConverter`
 
 2. BoolArguConverter:
 
-   Helps convert to bool, for source value, if it's "true", then return true, if it's "false", then return false, otherwise, convert failed. (Cases is ignored).
+   帮助转换到布尔值, 使用 bool.Parse 和 bool.TryParse
 
 3. CharArguConverter:
 
-   Helps convert to char, only when source string has one char, returns the char, otherwise, convert failed.
+   帮助转换到字符, 仅当字符串有唯一一个字符时, 返回这个字符, 否则转换失败
 
 4.   ByteArguConverter:
 
@@ -250,75 +244,74 @@ Here is all build-in `ArgumentConverter`:
 
 11. DecimalArguConverter:
 
-    The converters mentioned above all returns the corresponding number type, and all calls `Parse` and `TryParse` method of corresponding number type.
+    上面提到的转换器均返回对应的数字类型, 并且它们都通过调用对应类型的 `Parse` 和 `TryParse` 方法实现转换
 
 12. EnumArguConverter&lt;T&gt;:
 
-    Helps convert to `Enum` type. T should specified a `Enum` type. It can convert from a name or number value of `Enum` type.
+    帮助转换到枚举类型, T 应该被指定为一个枚举类型. 它可以从枚举值的名称或数字值来转换
 
 13. ForeachArguConverter&lt;TConverter&gt;:
 
-    Helps convert to Array, only used for variable-length parameter (decorated by `params`), `TConverter` must implement `IArgumentConverter`, each value of source string array will be converted by the specified Converter.
+    帮助转换到一个数组, 仅用于可变参数(使用 `params` 修饰), `TConverter` 必须实现 `IArgumentConverter` 接口, 每个值都将被指定的转换器转换, 最终得到一个对应类型的数组.
 
 14. CharArrayArguConverter:
 
-    Helps convert to char array, it calls `string.ToCharArray()` to do conversion.
-    
+    帮助转换到字符数组, 它调用 `string.ToCharArray()` 来进行转换.
 
 
 ## About ArgumentParser
 
 ### Custom Parser:
 
-To define custom `ArgumentParser`, your must follow these rules:
+定义自定义的 `ArgumentParser`, 你需要遵守下面的规则:
 
-1. Implements `IArgumentParser`
-2. After parsing, the reference parameter `index` must leave the parts of result(IArgument), for example, at the index 3, in your custom parser, it will return the result (result was parsed successfully), and the result is from two `CommandLineSegment`s, then the index must be 5 (out of 3 and 4).
+1. 实现 `IArgumentParser` 接口
+2. 在分析完毕后, 引用参数 `index` 必须离开参数结果(IArgument)的区域, 例如, 在索引 3, 在你的自定义分析器中, 他将返回结果 (结果被成功分析), 并且分析结果来自于两个 `CommandLineSegment`, 所以 `index` 必须是 5 (在 3 和 4 之外).
 
 ## About ArgumentConverter
 
-### Custom Converter:
+### 自定义 Converter:
 
-The recommended way to define a custom `ArgumentConverter` is this:
+定义自定义 `ArgumentConverter` 的推荐方式是这样:
 
 ```csharp
-class MyConverter : ArgumentConverter<MyType>    // inherit ArgumentConverter<T> but not IArgumentConverter<T>
+class MyConverter : ArgumentConverter<MyType>    // 继承 ArgumentConverter<T> 而不是 IArgumentConverter<T>
 {
     public override MyType Convert(string argument)
     {
-        // your code here
+        // 你的代码
     }
     public override bool TryConvert(string argument, out MyType result)
     {
-        // your code here
+        // 你的代码
     }
 }
 ```
 
-The reason to inherit `ArgumentConverter<T>` but not `IArgumentConverter<T>` is, in `ArgumentConverter<T>`, all overloads calls two methods:
+继承 `ArgumentConverter<T>` 而不是 `IArgumentConverter<T>` 的原因是, 在 `ArgumentConverter<T>` 中, 所有方法重载均调用这两个方法:
 
 1. T Convert(string argument);
 2. bool TryConverter(string argument, out T result);
 
-So, if you inherit `ArgumentConverter<T>`, you just need to override these two methods.
+所以如果继承 `ArgumentConverter<T>`, 你只需要重写这两个方法.
 
 ### Tips:
 
-1. DO NOT create a `ArgumentConverter` with new expression, use `ArgumentConverterManager.GetConverter<T>()`.
+1. 不要使用 new 表达式来创建一个 `ArgumentConverter` 实例, 请使用 `ArgumentConverterManager.GetConverter<T>()`.
 
 
 
 ## FAQ
 
-1. When I calling `CommandObject.ExecuteCommand(IArgumentParser[] parsers, string cmdline)`, but some of parsers don't work:
+1. 当我调用 `CommandObject.ExecuteCommand(IArgumentParser[] parsers, string cmdline)` 时, 某些分析器不能正常使用:
 
    ```csharp
-   // you must specify parsers in a correct order, for example:
+   // 你必须以正确的顺序指定分析器, 否则就会这样:
    CommandObject<AppCommands> myCmds = new CommandObject<AppCommands>();
    myCmds.ExecuteCommand(new IArgumentParser[]
    {
-       new ArguParser(),                // in this case, FieldArguParser and PropertyArguParser will not work.
-       new FieldArguParser(),           // this is because that ArguParser can parse ANY CommandLineSegments
-       new PropertyArguParser()         // so you should place ArguParser as the last parser.
+       new ArguParser(),                // 在这种情况下, FieldArguParser 和 PropertyArguParser 将不起作用.
+       new FieldArguParser(),           // 这是因为 ArguParser 可以分析任何 CommandLineSegments, 所以你应该
+       new PropertyArguParser()         // 将 ArguParser 作为最后一个分析器, 这样分析的时候就会先使用前两个
    }, Console.ReadLine());
    ```

@@ -28,12 +28,12 @@ namespace TestConsole
                 Console.Write(">>> ");
                 return Console.ReadLine();
             }
-            public enum ObjectComparision
+            public enum ObjectComparison
             {
                 EQ, NE, GT, LT, GE, LE,  ET
             }
 
-            [Command(typeof(FloatArguConverter), typeof(FloatArguConverter))]      // the build-in ArgumentConverter in NullLib.CommandLine
+            [Command(typeof(FloatArguConverter), typeof(FloatArguConverter), Description = "")]      // the build-in ArgumentConverter in NullLib.CommandLine
             public float Plus(float a, float b)
             {
                 return a + b;
@@ -78,65 +78,29 @@ namespace TestConsole
                 IfCommands ifCommands = new IfCommands(Self, ok);
                 ifCommands.ProcessIf();
             }
-            public void If(ObjectComparision comparision, string param)
+            public void If(ObjectComparison comparision, string param)
             {
-                IfToDo(comparision switch
-                {
-                    ObjectComparision.ET => File.Exists(param),
-                    _ => throw new ArgumentOutOfRangeException()
-                });
+                IfToDo(IfCommands.CheckIf(comparision, param));
             }
-            [Command(typeof(IntArguConverter), typeof(EnumArguConverter<ObjectComparision>), typeof(IntArguConverter))]
-            public void If(int num1, ObjectComparision comparision, int num2)
+            [Command(typeof(IntArguConverter), typeof(EnumArguConverter<ObjectComparison>), typeof(IntArguConverter))]
+            public void If(int num1, ObjectComparison comparision, int num2)
             {
-                IfToDo(comparision switch
-                {
-                    ObjectComparision.EQ => num1 == num2,
-                    ObjectComparision.NE => num1 != num2,
-                    ObjectComparision.GT => num1 > num2,
-                    ObjectComparision.LT => num1 < num2,
-                    ObjectComparision.GE => num1 >= num2,
-                    ObjectComparision.LE => num1 <= num2,
-                    _ => throw new ArgumentOutOfRangeException()
-                });
+                IfToDo(IfCommands.CheckIf(num1, comparision, num2));
             }
-            [Command(typeof(FloatArguConverter), typeof(EnumArguConverter<ObjectComparision>), typeof(FloatArguConverter))]
-            public void If(float num1, ObjectComparision comparision, float num2)
+            [Command(typeof(FloatArguConverter), typeof(EnumArguConverter<ObjectComparison>), typeof(FloatArguConverter))]
+            public void If(float num1, ObjectComparison comparision, float num2)
             {
-                IfToDo(comparision switch
-                {
-                    ObjectComparision.EQ => num1 == num2,
-                    ObjectComparision.NE => num1 != num2,
-                    ObjectComparision.GT => num1 > num2,
-                    ObjectComparision.LT => num1 < num2,
-                    ObjectComparision.GE => num1 >= num2,
-                    ObjectComparision.LE => num1 <= num2,
-                    _ => throw new ArgumentOutOfRangeException()
-                });
+                IfToDo(IfCommands.CheckIf(num1, comparision, num2));
             }
-            [Command(typeof(DoubleArguConverter), typeof(EnumArguConverter<ObjectComparision>), typeof(DoubleArguConverter))]
-            public void If(double num1, ObjectComparision comparision, double num2)
+            [Command(typeof(DoubleArguConverter), typeof(EnumArguConverter<ObjectComparison>), typeof(DoubleArguConverter))]
+            public void If(double num1, ObjectComparison comparision, double num2)
             {
-                IfToDo(comparision switch
-                {
-                    ObjectComparision.EQ => num1 == num2,
-                    ObjectComparision.NE => num1 != num2,
-                    ObjectComparision.GT => num1 > num2,
-                    ObjectComparision.LT => num1 < num2,
-                    ObjectComparision.GE => num1 >= num2,
-                    ObjectComparision.LE => num1 <= num2,
-                    _ => throw new ArgumentOutOfRangeException()
-                });
+                IfToDo(IfCommands.CheckIf(num1, comparision, num2));
             }
-            [Command(typeof(ArguConverter), typeof(EnumArguConverter<ObjectComparision>), typeof(ArguConverter))]
-            public void If(string str1, ObjectComparision comparision, string str2)
+            [Command(typeof(ArguConverter), typeof(EnumArguConverter<ObjectComparison>), typeof(ArguConverter))]
+            public void If(string str1, ObjectComparison comparision, string str2)
             {
-                IfToDo(comparision switch
-                {
-                    ObjectComparision.EQ => str1 == str2,
-                    ObjectComparision.NE => str1 != str2,
-                    _ => throw new ArgumentOutOfRangeException()
-                });
+                IfToDo(IfCommands.CheckIf(str1, comparision, str2));
             }
             [Command(typeof(ForeachArguConverter<ArguConverter>))]
             public void Test(params string[] objs)

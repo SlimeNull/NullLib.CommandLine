@@ -29,8 +29,15 @@ namespace TestConsole
                             do
                             {
                                 string cmdline = NextCommandString();
-                                if (!Self.TryExecuteCommand(cmdline, true, out _) && !Root.CanExecuteCommand(cmdline, true))
-                                    throw new SyntaxException();
+                                try
+                                {
+                                    STDOUT = Self.ExecuteCommand(cmdline, true);
+                                }
+                                catch(CommandException)
+                                {
+                                    if (!Root.CanExecuteCommand(cmdline, true))
+                                        throw new CommandEntryPointNotFoundException() ;
+                                }
                             }
                             while (!ToEndIf);
                         }
@@ -39,8 +46,14 @@ namespace TestConsole
                             do
                             {
                                 string cmdline = NextCommandString();
-                                if (!Self.TryExecuteCommand(cmdline, true, out _))
-                                    Root.ExecuteCommand(cmdline, true);
+                                try
+                                {
+                                    STDOUT = Self.ExecuteCommand(cmdline, true);
+                                }
+                                catch(CommandException)
+                                {
+                                    STDOUT = Root.ExecuteCommand(cmdline, true);
+                                }
                             }
                             while (!ToEndIf);
                         }

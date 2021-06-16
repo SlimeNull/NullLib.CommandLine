@@ -9,10 +9,13 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Specify a method can be execute by 
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
     public sealed class CommandAttribute : Attribute
     {
         readonly IArgumentConverter[] arguConverters;
+        /// <summary>
+        /// ArgumentConverters for current command
+        /// </summary>
         public IArgumentConverter[] ArgumentConverters { get => arguConverters; }
 
         /// <summary>
@@ -43,5 +46,16 @@ namespace NullLib.CommandLine
             //Console.WriteLine("AllConvertersCount:" + AllConverters.Count);
 #endif
         }
+
+        /// <summary>
+        /// Description about current command
+        /// </summary>
+        public string Description { get; set; }
+    }
+    [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = false)]
+    public sealed class CommandParamAttribute : Attribute
+    {
+        public string Description { get; set; }
+        public string DefaultValue { get; set; }
     }
 }
