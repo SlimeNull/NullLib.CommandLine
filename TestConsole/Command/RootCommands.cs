@@ -10,7 +10,7 @@ namespace TestConsole
         {
             public CommandObject<MyCommands> Self { get; }
             public static object STDOUT
-            { 
+            {
                 set
                 {
                     if (value != null)
@@ -30,7 +30,7 @@ namespace TestConsole
             }
             public enum ObjectComparison
             {
-                EQ, NE, GT, LT, GE, LE,  ET
+                EQ, NE, GT, LT, GE, LE, ET
             }
 
             [Command(typeof(FloatArguConverter), typeof(FloatArguConverter), Description = "")]      // the build-in ArgumentConverter in NullLib.CommandLine
@@ -42,6 +42,15 @@ namespace TestConsole
             public float Mul(float a, float b)
             {
                 return a * b;
+            }
+            [Command(typeof(FloatArguConverter))]
+            public float Div(
+                [CommandArgu(CommandArguAlias = "awa")]
+                float a,
+                [CommandArgu(CommandArguAlias = "qwq")]
+                float b)
+            {
+                return a / b;
             }
             [Command(typeof(DoubleArguConverter))]
             public double Log(double n, double newBase = Math.E)    // you can also use optional parameter
@@ -56,9 +65,11 @@ namespace TestConsole
                     result += i;
                 return result;
             }
+
             [Command(typeof(ArguConverter))]        // if don't need to do any convertion, specify an 'ArgumentConverter'
             public void Print(string txt)
             {
+                // 在这里, 这个方法有一个 Command 特性, 我有没有办法在这个方法体内直接获得这个特性的实例?
                 Console.WriteLine(txt);
             }
             [Command]                                   // the defualt converter is 'ArgumentConverter', you can ignore these
@@ -112,6 +123,12 @@ namespace TestConsole
             public void Exit(int exitCode = 0)
             {
                 Environment.Exit(exitCode);
+            }
+
+            [Command(CommandName = "$", CommandAlias = "#")]
+            public void FuckYouWorld()
+            {
+                Console.WriteLine("Fuck you world");
             }
         }
     }

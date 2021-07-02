@@ -6,7 +6,7 @@
     <members>
         <member name="T:NullLib.CommandLine.IArgument">
             <summary>
-            
+            Argument of a command
             </summary>
         </member>
         <member name="P:NullLib.CommandLine.IArgument.Name">
@@ -29,7 +29,7 @@
             Provide method for parsing commandline segments
             </summary>
         </member>
-        <member name="M:NullLib.CommandLine.IArgumentParser.TryParse(System.Int32@,NullLib.CommandLine.CommandLineSegment[]@,NullLib.CommandLine.IArgument@)">
+        <member name="M:NullLib.CommandLine.IArgumentParser.TryParse(System.Int32@,NullLib.CommandLine.CommandSegment[]@,NullLib.CommandLine.IArgument@)">
             <summary>
             Try to parse an Argument from commandline segments
             </summary>
@@ -38,22 +38,30 @@
             <param name="result">Result Argument</param>
             <returns>If this parsing was successed</returns>
         </member>
-        <member name="T:NullLib.CommandLine.CommandLineSegment">
+        <member name="M:NullLib.CommandLine.IArgumentParser.FormatArgu(System.String,System.String)">
+            <summary>
+            Format param name and param default value to a standard format of current parser
+            </summary>
+            <param name="name">Param name</param>
+            <param name="defaultValue">Param default value</param>
+            <returns>Formated document string</returns>
+        </member>
+        <member name="T:NullLib.CommandLine.CommandSegment">
             <summary>
             Commandline segment splited by CommandParser
             </summary>
         </member>
-        <member name="F:NullLib.CommandLine.CommandLineSegment.Quoted">
+        <member name="F:NullLib.CommandLine.CommandSegment.Quoted">
             <summary>
             If this segment was quoted
             </summary>
         </member>
-        <member name="F:NullLib.CommandLine.CommandLineSegment.Content">
+        <member name="F:NullLib.CommandLine.CommandSegment.Content">
             <summary>
             String content of this segment
             </summary>
         </member>
-        <member name="M:NullLib.CommandLine.CommandLineSegment.#ctor(System.String,System.Boolean)">
+        <member name="M:NullLib.CommandLine.CommandSegment.#ctor(System.String,System.Boolean)">
             <summary>
             Initialize an instance
             </summary>
@@ -63,6 +71,21 @@
         <member name="T:NullLib.CommandLine.Argument">
             <summary>
             Commandline argument
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.Argument.Name">
+            <summary>
+            Name of this Argument, if not specified, then null
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.Argument.Content">
+            <summary>
+            StringContent of this Argument
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.Argument.ValueObj">
+            <summary>
+            Value object of this Argument, String or String[]
             </summary>
         </member>
         <member name="M:NullLib.CommandLine.Argument.#ctor">
@@ -128,6 +151,12 @@
             <param name="result">Conversion result</param>
             <returns>If the Conversion was successed</returns>
         </member>
+        <member name="T:NullLib.CommandLine.IArgumentConverter`1">
+            <summary>
+            Provide methods to convert string or string[] to <typeparamref name="TResult"/>
+            </summary>
+            <typeparam name="TResult"></typeparam>
+        </member>
         <member name="M:NullLib.CommandLine.IArgumentConverter`1.Convert(System.String)">
             <summary>
             Convert from a string
@@ -144,7 +173,7 @@
         </member>
         <member name="M:NullLib.CommandLine.IArgumentConverter`1.TryConvert(System.String,`0@)">
             <summary>
-            Convert from a string
+            Try to convert from a string
             </summary>
             <param name="argu">String to convert</param>
             <param name="result">Conversion result</param>
@@ -152,42 +181,42 @@
         </member>
         <member name="M:NullLib.CommandLine.IArgumentConverter`1.TryConvert(System.Object,`0@)">
             <summary>
-            Convert form an object
+            Try to convert from a object
             </summary>
-            <param name="argu">Object to convert</param>
-            <param name="result">Conversion result</param>
-            <returns>If the Conversion was successed</returns>
+            <param name="argu"></param>
+            <param name="result"></param>
+            <returns></returns>
         </member>
-        <member name="T:NullLib.CommandLine.ArgumentConverterManager">
+        <member name="T:NullLib.CommandLine.ArguConverterManager">
             <summary>
             Provide methods for getting ArgumentConverter without initialize repeated converter
             </summary>
         </member>
-        <member name="P:NullLib.CommandLine.ArgumentConverterManager.AllConverters">
+        <member name="P:NullLib.CommandLine.ArguConverterManager.AllConverters">
             <summary>
             Global converter storage
             </summary>
         </member>
-        <member name="M:NullLib.CommandLine.ArgumentConverterManager.GetConverter``1">
+        <member name="M:NullLib.CommandLine.ArguConverterManager.GetConverter``1">
             <summary>
             Get from global storage or initialize a converter
             </summary>
             <typeparam name="T">Converter type</typeparam>
             <returns>Result converter</returns>
         </member>
-        <member name="M:NullLib.CommandLine.ArgumentConverterManager.GetConverter(System.Type)">
+        <member name="M:NullLib.CommandLine.ArguConverterManager.GetConverter(System.Type)">
             <summary>
             Get from global storage or initialize a converter
             </summary>
             <param name="type">Converter type</param>
             <returns>Result converter</returns>
         </member>
-        <member name="T:NullLib.CommandLine.ArgumentConverterBase">
+        <member name="T:NullLib.CommandLine.ArguConverterBase">
             <summary>
             Base class of ArgumentConverter
             </summary>
         </member>
-        <member name="T:NullLib.CommandLine.ArgumentConverterBase`1">
+        <member name="T:NullLib.CommandLine.ArguConverterBase`1">
             <summary>
             Base class of ArgumentConverter
             </summary>
@@ -260,9 +289,19 @@
             </summary>
             <typeparam name="TConverter">Converter to use</typeparam>
         </member>
+        <member name="T:NullLib.CommandLine.CharArrayArguConverter">
+            <summary>
+            Char[] converter, convert string to char[]
+            </summary>
+        </member>
         <member name="T:NullLib.CommandLine.CommandAttribute">
             <summary>
             Specify a method can be execute by 
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.CommandAttribute.ArgumentConverters">
+            <summary>
+            ArgumentConverters for current command
             </summary>
         </member>
         <member name="M:NullLib.CommandLine.CommandAttribute.#ctor">
@@ -277,10 +316,72 @@
             </summary>
             <param name="arguConverters"></param>
         </member>
+        <member name="P:NullLib.CommandLine.CommandAttribute.InvokingInfo">
+            <summary>
+            Infomation of calling corresponding Command, if it's not being calling, value is null
+            </summary>
+        </member>
+        <member name="M:NullLib.CommandLine.CommandAttribute.IsCorrectName(System.String,System.StringComparison)">
+            <summary>
+            Check specified name is the correct name of current command
+            </summary>
+            <param name="cmdName">Name for checking</param>
+            <param name="stringComparison">StringComparison</param>
+            <returns></returns>
+        </member>
+        <member name="P:NullLib.CommandLine.CommandAttribute.CommandName">
+            <summary>
+            Name of Command, default is same as Method name
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.CommandAttribute.CommandAlias">
+            <summary>
+            Alias of Command, default is null (disabled)
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.CommandAttribute.Description">
+            <summary>
+            Description about current command
+            </summary>
+        </member>
+        <member name="T:NullLib.CommandLine.CommandArguAttribute">
+            <summary>
+            Commnad parameter infomation
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.CommandArguAttribute.Description">
+            <summary>
+            Description of Parameter
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.CommandArguAttribute.DefaultValue">
+            <summary>
+            Default value of Parameter
+            </summary>
+        </member>
         <member name="T:NullLib.CommandLine.CommandObject">
             <summary>
             CommandObject is used for calling method by command line.
             </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.CommandObject.TargetInstance">
+            <summary>
+            Operation's target instance of current CommandObject
+            </summary>
+        </member>
+        <member name="M:NullLib.CommandLine.CommandObject.#ctor(System.Object)">
+            <summary>
+            Initialize a CommandObject with specified instance
+            </summary>
+            <param name="instance"></param>
+        </member>
+        <member name="M:NullLib.CommandLine.CommandObject.FindArguments(System.Reflection.MethodInfo,System.Object)">
+            <summary>
+            Find arguments from specified instance for calling specified method
+            </summary>
+            <param name="method">Method for calling</param>
+            <param name="instance">Instance for finding</param>
+            <returns></returns>
         </member>
         <member name="M:NullLib.CommandLine.CommandObject.ExecuteCommand(System.String)">
             <summary>
@@ -288,6 +389,89 @@
             </summary>
             <param name="cmdline"></param>
             <returns></returns>
+        </member>
+        <member name="M:NullLib.CommandLine.CommandObject.CanExecuteCommand(NullLib.CommandLine.IArgumentParser[],NullLib.CommandLine.CommandSegment[],System.Boolean)">
+            <summary>
+            Check if specified cmdline can be executed
+            </summary>
+            <param name="parsers"></param>
+            <param name="cmdline"></param>
+            <param name="ignoreCases"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NullLib.CommandLine.CommandObject.CanExecuteCommand(NullLib.CommandLine.IArgumentParser[],NullLib.CommandLine.CommandSegment[])">
+            <summary>
+            Check if specified cmdline can be executed
+            </summary>
+            <param name="parsers"></param>
+            <param name="cmdline"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NullLib.CommandLine.CommandObject.CanExecuteCommand(NullLib.CommandLine.IArgumentParser[],System.String,System.Boolean)">
+            <summary>
+            Check if specified cmdline can be executed
+            </summary>
+            <param name="parsers"></param>
+            <param name="cmdline"></param>
+            <param name="ignoreCases"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NullLib.CommandLine.CommandObject.CanExecuteCommand(NullLib.CommandLine.IArgumentParser[],System.String)">
+            <summary>
+            Check if specified cmdline can be executed
+            </summary>
+            <param name="parsers"></param>
+            <param name="cmdline"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NullLib.CommandLine.CommandObject.CanExecuteCommand(NullLib.CommandLine.CommandSegment[],System.Boolean)">
+            <summary>
+            Check if specified cmdline can be executed
+            </summary>
+            <param name="cmdline"></param>
+            <param name="ignoreCases"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NullLib.CommandLine.CommandObject.CanExecuteCommand(NullLib.CommandLine.CommandSegment[])">
+            <summary>
+            Check if specified cmdline can be executed
+            </summary>
+            <param name="cmdline"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NullLib.CommandLine.CommandObject.CanExecuteCommand(System.String,System.Boolean)">
+            <summary>
+            Check if specified cmdline can be executed
+            </summary>
+            <param name="cmdline"></param>
+            <param name="ignoreCases"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NullLib.CommandLine.CommandObject.CanExecuteCommand(System.String)">
+            <summary>
+            Check if specified cmdline can be executed
+            </summary>
+            <param name="cmdline"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NullLib.CommandLine.CommandObject.TryExecuteCommand(NullLib.CommandLine.IArgumentParser[],NullLib.CommandLine.CommandSegment[],System.Boolean,System.Object@)">
+            <summary>
+            Try to execute specified cmdline
+            </summary>
+            <param name="parsers"></param>
+            <param name="cmdline"></param>
+            <param name="ignoreCases"></param>
+            <param name="result"></param>
+            <exception cref="T:NullLib.CommandLine.CommandEntryPointNotFoundException">Cannot find appropriate method to invoke</exception>
+            <exception cref="T:NullLib.CommandLine.CommandParameterFormatException">Cannot format cmdline to required parameters</exception>
+            <exception cref="T:NullLib.CommandLine.CommandParameterConvertException">Cannot convert cmdline argument to required parameter type</exception>
+            <exception cref="T:System.Reflection.TargetInvocationException"></exception>
+            <returns></returns>
+        </member>
+        <member name="T:NullLib.CommandLine.CommandObject`1">
+            <summary>
+            CommandObject is used for calling method by command line.
+            </summary>
         </member>
         <member name="M:NullLib.CommandLine.CommandObject`1.#ctor">
             <summary>
@@ -300,6 +484,16 @@
             </summary>
             <param name="instance"></param>
         </member>
+        <member name="P:NullLib.CommandLine.CommandObject`1.TargetInstance">
+            <summary>
+            Operation's target instance of current CommnadObject
+            </summary>
+        </member>
+        <member name="T:NullLib.CommandLine.CommandObjectManager">
+            <summary>
+            CommandObject information manager
+            </summary>
+        </member>
         <member name="T:NullLib.CommandLine.CommandParser">
             <summary>
             Provide methods for parsing command
@@ -310,14 +504,15 @@
             Default parsers for parse commandline string.
             </summary>
         </member>
-        <member name="M:NullLib.CommandLine.CommandParser.SplitCommandLine(System.String,NullLib.CommandLine.CommandLineSegment[]@)">
+        <member name="M:NullLib.CommandLine.CommandParser.SplitCommandLine(System.String,NullLib.CommandLine.CommandSegment[]@)">
             <summary>
             Split commandline string to CommandLineSegment[]
             </summary>
             <param name="str">commandline string</param>
+            <param name="result">Return result</param>
             <returns>Splitting result</returns>
         </member>
-        <member name="M:NullLib.CommandLine.CommandParser.SplitCommandInfo(NullLib.CommandLine.CommandLineSegment[],System.String@,NullLib.CommandLine.CommandLineSegment[]@)">
+        <member name="M:NullLib.CommandLine.CommandParser.SplitCommandInfo(NullLib.CommandLine.CommandSegment[],System.String@,NullLib.CommandLine.CommandSegment[]@)">
             <summary>
             Seperate command name and command arguments from commandline segements.
             </summary>

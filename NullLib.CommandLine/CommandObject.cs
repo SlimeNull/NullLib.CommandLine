@@ -12,40 +12,41 @@ namespace NullLib.CommandLine
     public class CommandObject
     {
         internal readonly object instance;
-        Type instanceType;
+        readonly Type instanceType;
         MethodInfo[] methods;
         ParameterInfo[][] paramInfos;
         CommandAttribute[] methodAttributes;
-        CommandParamAttribute[][] paramAttributes;
+        CommandArguAttribute[][] paramAttributes;
 
+        /// <summary>
+        /// Operation's target instance of current CommandObject
+        /// </summary>
         public virtual object TargetInstance => instance;
 
-        private void InitializeInstance(bool fastMode)
+        private void InitializeInstance()
         {
-            if (fastMode)
-                CommandObjectManager.GetCommandObjectInfo(instanceType, out methods, out paramInfos, out methodAttributes, out paramAttributes);
-            else
-                CommandObjectManager.NewCommandObjectInfo(instanceType, out methods, out paramInfos, out methodAttributes, out paramAttributes);
+            CommandObjectManager.GetCommandObjectInfo(instanceType, out methods, out paramInfos, out methodAttributes, out paramAttributes);
         }
 
+        /// <summary>
+        /// Initialize a CommandObject with specified instance
+        /// </summary>
+        /// <param name="instance"></param>
         public CommandObject(object instance)
         {
-            if (instance == null)
-                throw new ArgumentNullException(nameof(instance));
-            this.instance = instance;
+            this.instance = instance ?? throw new ArgumentNullException(nameof(instance));
+
             instanceType = instance.GetType();
-            InitializeInstance(true);
-        }
-        public CommandObject(object instance, bool fastMode)
-        {
-            if (instance == null)
-                throw new ArgumentNullException(nameof(instance));
-            this.instance = instance;
-            instanceType = instance.GetType();
-            InitializeInstance(fastMode);
+            InitializeInstance();
         }
 
-        public static object[] GetArguments(MethodInfo method, object instance)
+        /// <summary>
+        /// Find arguments from specified instance for calling specified method
+        /// </summary>
+        /// <param name="method">Method for calling</param>
+        /// <param name="instance">Instance for finding</param>
+        /// <returns></returns>
+        public static object[] FindArguments(MethodInfo method, object instance)
         {
             Type arguObjType = instance.GetType();
             ParameterInfo[] methodParams = method.GetParameters();
@@ -74,13 +75,13 @@ namespace NullLib.CommandLine
             return paramsForCalling;
         }
 
-        public object ExecuteCommand(IArgumentParser[] parsers, CommandLineSegment[] cmdline, bool ignoreCases)
+        public object ExecuteCommand(IArgumentParser[] parsers, CommandSegment[] cmdline, bool ignoreCases)
         {
             CommandParser.SplitCommandInfo(cmdline, out var cmdname, out var arguments);
             IArgument[] args = CommandParser.ParseArguments(parsers, arguments);
-            return CommandInvoker.Invoke(methods, paramInfos, methodAttributes, instance, cmdname, args, ignoreCases ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+            return CommandInvoker.Invoke(methods, methodAttributes, paramAttributes, instance, cmdname, args, ignoreCases ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
         }
-        public object ExecuteCommand(IArgumentParser[] parsers, CommandLineSegment[] cmdline)
+        public object ExecuteCommand(IArgumentParser[] parsers, CommandSegment[] cmdline)
         {
             return ExecuteCommand(parsers, cmdline, false);
         }
@@ -93,11 +94,11 @@ namespace NullLib.CommandLine
         {
             return ExecuteCommand(parsers, cmdline, false);
         }
-        public object ExecuteCommand(CommandLineSegment[] cmdline, bool ignoreCases)
+        public object ExecuteCommand(CommandSegment[] cmdline, bool ignoreCases)
         {
             return ExecuteCommand(CommandParser.DefaultParsers, cmdline, ignoreCases);
         }
-        public object ExecuteCommand(CommandLineSegment[] cmdline)
+        public object ExecuteCommand(CommandSegment[] cmdline)
         {
             return ExecuteCommand(CommandParser.DefaultParsers, cmdline, false);
         }
@@ -122,11 +123,11 @@ namespace NullLib.CommandLine
         /// <param name="cmdline"></param>
         /// <param name="ignoreCases"></param>
         /// <returns></returns>
-        public bool CanExecuteCommand(IArgumentParser[] parsers, CommandLineSegment[] cmdline, bool ignoreCases)
+        public bool CanExecuteCommand(IArgumentParser[] parsers, CommandSegment[] cmdline, bool ignoreCases)
         {
             CommandParser.SplitCommandInfo(cmdline, out var cmdname, out var cmdparams);
             var args = CommandParser.ParseArguments(parsers, cmdparams);
-            return CommandInvoker.CanInvoke(methods, paramInfos, methodAttributes, cmdname, args, ignoreCases ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+            return CommandInvoker.CanInvoke(methods, methodAttributes, paramAttributes, cmdname, args, ignoreCases ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
         }
         /// <summary>
         /// Check if specified cmdline can be executed
@@ -134,7 +135,7 @@ namespace NullLib.CommandLine
         /// <param name="parsers"></param>
         /// <param name="cmdline"></param>
         /// <returns></returns>
-        public bool CanExecuteCommand(IArgumentParser[] parsers, CommandLineSegment[] cmdline)
+        public bool CanExecuteCommand(IArgumentParser[] parsers, CommandSegment[] cmdline)
         {
             return CanExecuteCommand(parsers, cmdline, false);
         }
@@ -167,7 +168,7 @@ namespace NullLib.CommandLine
         /// <param name="cmdline"></param>
         /// <param name="ignoreCases"></param>
         /// <returns></returns>
-        public bool CanExecuteCommand(CommandLineSegment[] cmdline, bool ignoreCases)
+        public bool CanExecuteCommand(CommandSegment[] cmdline, bool ignoreCases)
         {
             return CanExecuteCommand(CommandParser.DefaultParsers, cmdline, ignoreCases);
         }
@@ -176,7 +177,7 @@ namespace NullLib.CommandLine
         /// </summary>
         /// <param name="cmdline"></param>
         /// <returns></returns>
-        public bool CanExecuteCommand(CommandLineSegment[] cmdline)
+        public bool CanExecuteCommand(CommandSegment[] cmdline)
         {
             return CanExecuteCommand(CommandParser.DefaultParsers, cmdline, false);
         }
@@ -212,13 +213,13 @@ namespace NullLib.CommandLine
         /// <exception cref="CommandParameterConvertException">Cannot convert cmdline argument to required parameter type</exception>
         /// <exception cref="TargetInvocationException"></exception>
         /// <returns></returns>
-        public bool TryExecuteCommand(IArgumentParser[] parsers, CommandLineSegment[] cmdline, bool ignoreCases, out object result)
+        public bool TryExecuteCommand(IArgumentParser[] parsers, CommandSegment[] cmdline, bool ignoreCases, out object result)
         {
             CommandParser.SplitCommandInfo(cmdline, out var cmdname, out var arguments);
             IArgument[] args = CommandParser.ParseArguments(parsers, arguments);
-            return CommandInvoker.TryInvoke(methods, paramInfos, methodAttributes, instance, cmdname, args, ignoreCases ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal, out result);
+            return CommandInvoker.TryInvoke(methods, methodAttributes, paramAttributes, instance, cmdname, args, ignoreCases ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal, out result);
         }
-        public bool TryExecuteCommand(IArgumentParser[] parsers, CommandLineSegment[] cmdline, out object result)
+        public bool TryExecuteCommand(IArgumentParser[] parsers, CommandSegment[] cmdline, out object result)
         {
             return TryExecuteCommand(parsers, cmdline, false, out result);
         }
@@ -231,11 +232,11 @@ namespace NullLib.CommandLine
         {
             return TryExecuteCommand(parsers, cmdline, false, out result);
         }
-        public bool TryExecuteCommand(CommandLineSegment[] cmdline, bool ignoreCases, out object result)
+        public bool TryExecuteCommand(CommandSegment[] cmdline, bool ignoreCases, out object result)
         {
             return TryExecuteCommand(CommandParser.DefaultParsers, cmdline, ignoreCases, out result);
         }
-        public bool TryExecuteCommand(CommandLineSegment[] cmdline, out object result)
+        public bool TryExecuteCommand(CommandSegment[] cmdline, out object result)
         {
             return TryExecuteCommand(CommandParser.DefaultParsers, cmdline, false, out result);
         }
@@ -249,22 +250,26 @@ namespace NullLib.CommandLine
         }
 
 
-        protected string GenCommandDefine(int index, out string cmdname, out string[] positional, out string[] named)
+        protected string GenCommandDefinition(IArgumentParser parser, int index, out string cmdName, out string[] args)
         {
-            cmdname = methods[index].Name;
-            positional = paramInfos[index].Select(v => $"<{v.Name}>").ToArray();
-            named = paramInfos[index].Select(v => $"[{v.Name}=]")
+            cmdName = methods[index].Name;
+            string[] defaultValues = methodAttributes[index].ConvertArguObjects(paramAttributes[index].Select(v => v.DefaultValue)).ToArray();
+            args = paramAttributes[index].Select((v, i) => parser.FormatArgu(v.CommandArguName, defaultValues[i])).ToArray();
+            return $"{cmdName} {string.Join(" ", args)}";
         }
-        protected bool GenMethodOverviewInfo(string name, StringComparison stringComparison, out string result)
-        {
-            for (int i = 0, end = methods.Length; i < end; i++)
-            {
-                if (methods[i].Name.Equals(name, stringComparison))
-                {
-                }
-            }
-        }
+        //protected bool GenMethodOverviewInfo(string name, StringComparison stringComparison, out string result)
+        //{
+        //    for (int i = 0, end = methods.Length; i < end; i++)
+        //    {
+        //        if (methods[i].Name.Equals(name, stringComparison))
+        //        {
+        //        }
+        //    }
+        //}
     }
+    /// <summary>
+    /// CommandObject is used for calling method by command line.
+    /// </summary>
     public class CommandObject<T> : CommandObject where T : class
     {
         /// <summary>
@@ -278,11 +283,18 @@ namespace NullLib.CommandLine
         /// <param name="instance"></param>
         public CommandObject(T instance) :
             base(instance) { }
+
+        /// <summary>
+        /// Operation's target instance of current CommnadObject
+        /// </summary>
         public new T TargetInstance { get => instance as T; }
     }
+    /// <summary>
+    /// CommandObject information manager
+    /// </summary>
     public static class CommandObjectManager
     {
-        private static Dictionary<Type, CommandObjectInfo> cmdObjInfos = new Dictionary<Type, CommandObjectInfo>();
+        private static readonly Dictionary<Type, CommandObjectInfo> cmdObjInfos = new();
 
         public static IEnumerable<Type> Keys => cmdObjInfos.Keys;
         public static bool HasInfo(Type type)
@@ -293,7 +305,7 @@ namespace NullLib.CommandLine
         {
             return cmdObjInfos.Remove(type);
         }
-        public static void GetCommandObjectInfo(Type type, out MethodInfo[] methods, out ParameterInfo[][] paramInfos, out CommandAttribute[] methodAttributes, out CommandParamAttribute[][] paramAttributes)
+        public static void GetCommandObjectInfo(Type type, out MethodInfo[] methods, out ParameterInfo[][] paramInfos, out CommandAttribute[] methodAttributes, out CommandArguAttribute[][] paramAttributes)
         {
             if (cmdObjInfos.TryGetValue(type, out var cmdObjInfo))
             {
@@ -308,45 +320,51 @@ namespace NullLib.CommandLine
                 cmdObjInfos[type] = new CommandObjectInfo(methods, paramInfos, methodAttributes, paramAttributes);
             }
         }
-        public static void NewCommandObjectInfo(Type type, out MethodInfo[] methods, out ParameterInfo[][] paramInfos, out CommandAttribute[] methodAttributes, out CommandParamAttribute[][] paramAttributes)
+        public static void NewCommandObjectInfo(Type type, out MethodInfo[] methods, out ParameterInfo[][] paramInfos, out CommandAttribute[] methodAttributes, out CommandArguAttribute[][] paramAttributes)
         {
-            List<MethodInfo> _methods = new List<MethodInfo>();
-            List<ParameterInfo[]> _paramInfos = new List<ParameterInfo[]>();
-            List<CommandAttribute> _methodAttributes = new List<CommandAttribute>();
-            List<CommandParamAttribute[]> _paramAttributes = new List<CommandParamAttribute[]>();
+            List<MethodInfo> _methods = new();
+            List<ParameterInfo[]> _paramInfos = new();
+            List<CommandAttribute> _cmdAttrs = new();
+            List<CommandArguAttribute[]> _arguAttrs = new();
 
             foreach (var method in type.GetMethods())
             {
                 CommandAttribute attribute = method.GetCustomAttribute<CommandAttribute>();
                 if (attribute != null)
                 {
+                    attribute.LoadTarget(method);
                     ParameterInfo[] __paramInfos = method.GetParameters();
-                    CommandParamAttribute[] __paramAttributes = __paramInfos.Select(v => v.GetCustomAttribute<CommandParamAttribute>() ?? new CommandParamAttribute()).ToArray();
+                    CommandArguAttribute[] __arguAttributes = new CommandArguAttribute[__paramInfos.Length];
+                    
+                    for (int i = 0, end = __paramInfos.Length; i < end; i++)
+                    {
+                        ParameterInfo curParam = __paramInfos[i];
+                        CommandArguAttribute curAttr = curParam.GetCustomAttribute<CommandArguAttribute>() ?? new CommandArguAttribute();
+                        __arguAttributes[i] = curAttr;
+                        curAttr.LoadTarget(curParam);
+                    }
 
                     _methods.Add(method);
-                    _methodAttributes.Add(attribute);
+                    _cmdAttrs.Add(attribute);
                     _paramInfos.Add(__paramInfos);
+                    _arguAttrs.Add(__arguAttributes);
                 }
             }
 
             methods = _methods.ToArray();
             paramInfos = _paramInfos.ToArray();
-            methodAttributes = _methodAttributes.ToArray();
-            paramAttributes = _paramAttributes.ToArray();
+            methodAttributes = _cmdAttrs.ToArray();
+            paramAttributes = _arguAttrs.ToArray();
         }
 
-        class CommandObjectInfo
+        struct CommandObjectInfo
         {
             public MethodInfo[] Methods;
             public ParameterInfo[][] ParamInfos;
             public CommandAttribute[] MethodAttributes;
-            public CommandParamAttribute[][] ParamAttributes;
+            public CommandArguAttribute[][] ParamAttributes;
 
-            public CommandObjectInfo(Type classType)
-            {
-                GetCommandObjectInfo(classType, out this.Methods, out this.ParamInfos, out this.MethodAttributes, out this.ParamAttributes);
-            }
-            public CommandObjectInfo(MethodInfo[] methods, ParameterInfo[][] paramInfos, CommandAttribute[] methodAttributes, CommandParamAttribute[][] paramAttributes)
+            public CommandObjectInfo(MethodInfo[] methods, ParameterInfo[][] paramInfos, CommandAttribute[] methodAttributes, CommandArguAttribute[][] paramAttributes)
             {
                 this.Methods = methods;
                 this.ParamInfos = paramInfos;

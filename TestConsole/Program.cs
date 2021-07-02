@@ -13,7 +13,7 @@ namespace TestConsole
     {
         static void Main(string[] args)
         {
-            CommandObject<MyCommands> obj = new CommandObject<MyCommands>();       // 创建一个命令行对象
+            CommandObject<MyCommands> obj = new();       // 创建一个命令行对象
             IArgumentParser[] parsers = new IArgumentParser[]
             {
                 new PropertyArguParser("-"),
@@ -34,7 +34,6 @@ namespace TestConsole
                 if(result != null)
                     Console.WriteLine(result);
 #else
-                Thread.Sleep
                 try
                 {
                     var result = obj.ExecuteCommand(parsers, cmdline, true);

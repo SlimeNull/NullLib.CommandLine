@@ -90,9 +90,9 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Provide methods for getting ArgumentConverter without initialize repeated converter
     /// </summary>
-    public static class ArgumentConverterManager
+    public static class ArguConverterManager
     {
-        private static Type IArgumentConverterType = typeof(IArgumentConverter);
+        private static readonly Type IArgumentConverterType = typeof(IArgumentConverter);
         /// <summary>
         /// Global converter storage
         /// </summary>
@@ -135,9 +135,9 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Base class of ArgumentConverter
     /// </summary>
-    public abstract class ArgumentConverterBase : IArgumentConverter
+    public abstract class ArguConverterBase : IArgumentConverter
     {
-        private Type targetType = typeof(string);
+        private readonly Type targetType = typeof(string);
         public virtual Type TargetType { get => targetType; }
 
         public virtual bool IgnoreCases { get; set; }
@@ -192,9 +192,9 @@ namespace NullLib.CommandLine
     /// Base class of ArgumentConverter
     /// </summary>
     /// <typeparam name="TTarget"></typeparam>
-    public abstract class ArgumentConverterBase<TTarget> : IArgumentConverter<TTarget>
+    public abstract class ArguConverterBase<TTarget> : IArgumentConverter<TTarget>
     {
-        private static Type targetType = typeof(TTarget);
+        private static readonly Type targetType = typeof(TTarget);
         public Type TargetType { get => targetType; }
 
         public virtual bool IgnoreCases { get; set; }
@@ -283,7 +283,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Default converter, return value without any conversion
     /// </summary>
-    public class ArguConverter : ArgumentConverterBase<string>
+    public class ArguConverter : ArguConverterBase<string>
     {
         public override string Convert(string argu)
         {
@@ -299,7 +299,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Bool converter, return true if "true", false if "false", otherwise, convert failed
     /// </summary>
-    public class BoolArguConverter : ArgumentConverterBase<bool>
+    public class BoolArguConverter : ArguConverterBase<bool>
     {
         public override bool Convert(string argu)
         {
@@ -313,7 +313,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Byte convert, convert by byte.Parse and byte.TryParse
     /// </summary>
-    public class ByteArguConverter : ArgumentConverterBase<byte>
+    public class ByteArguConverter : ArguConverterBase<byte>
     {
         public override byte Convert(string argu)
         {
@@ -327,7 +327,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Char convert, if string has only one char, then return it, otherwise, convert failed
     /// </summary>
-    public class CharArguConverter : ArgumentConverterBase<char>
+    public class CharArguConverter : ArguConverterBase<char>
     {
         public override char Convert(string argu)
         {
@@ -357,7 +357,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Short converter, convert by short.Parse and short.TryParse
     /// </summary>
-    public class ShortArguConverter : ArgumentConverterBase<short>
+    public class ShortArguConverter : ArguConverterBase<short>
     {
         public override short Convert(string argu)
         {
@@ -371,7 +371,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Int converter, convert by int.Parse and int.TryParse
     /// </summary>
-    public class IntArguConverter : ArgumentConverterBase<int>
+    public class IntArguConverter : ArguConverterBase<int>
     {
         public override int Convert(string argu)
         {
@@ -385,7 +385,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Long converter, convert by long.Parse and long.TryParse
     /// </summary>
-    public class LongArguConverter : ArgumentConverterBase<long>
+    public class LongArguConverter : ArguConverterBase<long>
     {
         public override long Convert(string argu)
         {
@@ -399,7 +399,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Float converter, convert by float.Parse and float.TryParse
     /// </summary>
-    public class FloatArguConverter : ArgumentConverterBase<float>
+    public class FloatArguConverter : ArguConverterBase<float>
     {
         public override float Convert(string argu)
         {
@@ -413,7 +413,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Double converter, convert by double.Parse and double.TryParse
     /// </summary>
-    public class DoubleArguConverter : ArgumentConverterBase<double>
+    public class DoubleArguConverter : ArguConverterBase<double>
     {
         public override double Convert(string argu)
         {
@@ -427,7 +427,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// BigInt converter, convert by BigInteger.Parse and BigInteger.TryParse
     /// </summary>
-    public class BigIntArguConverter : ArgumentConverterBase<BigInteger>
+    public class BigIntArguConverter : ArguConverterBase<BigInteger>
     {
         public override BigInteger Convert(string argu)
         {
@@ -441,7 +441,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Decimal converter, convert by Decimal.Parse and Decimal.TryParse
     /// </summary>
-    public class DecimalArguConverter : ArgumentConverterBase<decimal>
+    public class DecimalArguConverter : ArguConverterBase<decimal>
     {
         public override decimal Convert(string argu)
         {
@@ -456,7 +456,7 @@ namespace NullLib.CommandLine
     /// Enum converter, convert by Enum.Parse and Enum.TryParse
     /// </summary>
     /// <typeparam name="T">Enum type</typeparam>
-    public class EnumArguConverter<T> : ArgumentConverterBase<T> where T : struct
+    public class EnumArguConverter<T> : ArguConverterBase<T> where T : struct
     {
         public override T Convert(string argu)
         {
@@ -471,14 +471,16 @@ namespace NullLib.CommandLine
     /// Convert from string[], use <typeparamref name="TConverter"/> to convert each element, only use in "params" parameter
     /// </summary>
     /// <typeparam name="TConverter">Converter to use</typeparam>
-    public class ForeachArguConverter<TConverter> : ArgumentConverterBase where TConverter : IArgumentConverter
+    public class ForeachArguConverter<TConverter> : ArguConverterBase where TConverter : IArgumentConverter
     {
-        public override Type TargetType => targetType; IArgumentConverter converter;
+        public override Type TargetType => targetType;
+
+        readonly IArgumentConverter converter;
         private readonly Type targetType;
 
         public ForeachArguConverter()
         {
-            converter = ArgumentConverterManager.GetConverter<TConverter>();
+            converter = ArguConverterManager.GetConverter<TConverter>();
             targetType = converter.TargetType.MakeArrayType();
         }
         public override object Convert(string argu)
@@ -554,7 +556,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Char[] converter, convert string to char[]
     /// </summary>
-    public class CharArrayArguConverter : ArgumentConverterBase<char[]>
+    public class CharArrayArguConverter : ArguConverterBase<char[]>
     {
         public override char[] Convert(string argu)
         {

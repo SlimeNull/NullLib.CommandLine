@@ -24,10 +24,10 @@ namespace NullLib.CommandLine
         /// <param name="str">commandline string</param>
         /// <param name="result">Return result</param>
         /// <returns>Splitting result</returns>
-        public static void SplitCommandLine(string str, out CommandLineSegment[] result)
+        public static void SplitCommandLine(string str, out CommandSegment[] result)
         {
-            List<CommandLineSegment> rstBulder = new List<CommandLineSegment>();
-            StringBuilder temp = new StringBuilder();
+            List<CommandSegment> rstBulder = new();
+            StringBuilder temp = new();
             bool escape = false, quote = false;
 
             foreach (char i in str)
@@ -59,7 +59,7 @@ namespace NullLib.CommandLine
                         {
                             if (i == '"')
                             {
-                                rstBulder.Add(new CommandLineSegment(temp.ToString(), true));
+                                rstBulder.Add(new CommandSegment(temp.ToString(), true));
                                 temp.Clear();
 
                                 quote = false;
@@ -75,7 +75,7 @@ namespace NullLib.CommandLine
                             {
                                 if (temp.Length > 0)
                                 {
-                                    rstBulder.Add(new CommandLineSegment(temp.ToString(), false));
+                                    rstBulder.Add(new CommandSegment(temp.ToString(), false));
                                     temp.Clear();
                                 }
 
@@ -85,7 +85,7 @@ namespace NullLib.CommandLine
                             {
                                 if (temp.Length > 0)
                                 {
-                                    rstBulder.Add(new CommandLineSegment(temp.ToString(), false));
+                                    rstBulder.Add(new CommandSegment(temp.ToString(), false));
                                     temp.Clear();
                                 }
                             }
@@ -99,7 +99,7 @@ namespace NullLib.CommandLine
             }
 
             if (temp.Length > 0)
-                rstBulder.Add(new CommandLineSegment(temp.ToString(), quote));
+                rstBulder.Add(new CommandSegment(temp.ToString(), quote));
 
             result = rstBulder.ToArray();
         }
@@ -110,24 +110,24 @@ namespace NullLib.CommandLine
         /// <param name="segments">Source commandline segments</param>
         /// <param name="cmdname">Commandline name</param>
         /// <param name="arguments">Commandline arguments</param>
-        public static void SplitCommandInfo(CommandLineSegment[] segments, out string cmdname, out CommandLineSegment[] arguments)
+        public static void SplitCommandInfo(CommandSegment[] segments, out string cmdname, out CommandSegment[] arguments)
         {
             if (segments.Length > 0)
             {
                 cmdname = segments[0].Content;
-                arguments = new CommandLineSegment[segments.Length - 1];
+                arguments = new CommandSegment[segments.Length - 1];
                 Array.Copy(segments, 1, arguments, 0, arguments.Length);
             }
             else
             {
                 cmdname = "";
-                arguments = new CommandLineSegment[0];
+                arguments = new CommandSegment[0];
             }
         }
 
-        public static IArgument[] ParseArguments(IList<IArgumentParser> parsers, CommandLineSegment[] arguments)
+        public static IArgument[] ParseArguments(IList<IArgumentParser> parsers, CommandSegment[] arguments)
         {
-            List<IArgument> result = new List<IArgument>();
+            List<IArgument> result = new();
             for (int i = 0, iend = arguments.Length; i < iend;)
             {
                 IArgument argu = null;
@@ -143,22 +143,22 @@ namespace NullLib.CommandLine
 
             return result.ToArray();
         }
-        public static IArgument[] ParseArguments(CommandLineSegment[] arguments)
+        public static IArgument[] ParseArguments(CommandSegment[] arguments)
         {
             return ParseArguments(DefaultParsers, arguments);
         }
     }
     public class ArguParser : IArgumentParser
     {
-        public bool TryParse(ref int index, ref CommandLineSegment[] arguments, out IArgument result)
+        public bool TryParse(ref int index, ref CommandSegment[] arguments, out IArgument result)
         {
             result = new Argument(arguments[index++].Content);
             return true;
         }
-        public bool TryFormat(string name, string defaultValue, out string result)
+
+        public string FormatArgu(string name, string defaultValue)
         {
-            result = $"<{name}>";
-            return true;
+            return defaultValue == null ? $"<{name}>" : $"[{name}({defaultValue})]";
         }
     }
     public class IdentifierArguParser : IArgumentParser
@@ -181,10 +181,10 @@ namespace NullLib.CommandLine
             }
             return false;
         }
-        public bool TryParse(ref int index, ref CommandLineSegment[] arguments, out IArgument result)
+        public bool TryParse(ref int index, ref CommandSegment[] arguments, out IArgument result)
         {
             result = null;
-            CommandLineSegment curSegment = arguments[index];
+            CommandSegment curSegment = arguments[index];
             if(curSegment.Quoted)
                 return false;
             if(!IsIdentifier(curSegment.Content))
@@ -193,17 +193,17 @@ namespace NullLib.CommandLine
             index++;
             return true;
         }
-        public bool TryFormat(string name, string defaultValue, out string result)
+
+        public string FormatArgu(string name, string defaultValue)
         {
-            result = $"<{name}>";
-            return true;
+            return defaultValue == null ? $"<{name}>" : $"[{name}({defaultValue})]";
         }
     }
     public class StringArguParser : IArgumentParser
     {
-        public bool TryParse(ref int index, ref CommandLineSegment[] arguments, out IArgument result)
+        public bool TryParse(ref int index, ref CommandSegment[] arguments, out IArgument result)
         {
-            CommandLineSegment curSegment = arguments[index];
+            CommandSegment curSegment = arguments[index];
             if(curSegment.Quoted)
             {
                 result = new Argument(curSegment.Content);
@@ -216,33 +216,33 @@ namespace NullLib.CommandLine
                 return false;
             }
         }
-        public bool TryFormat(string name, string defaultValue, out string result)
+
+        public string FormatArgu(string name, string defaultValue)
         {
-            result = $"<{name}>";
-            return true;
+            return defaultValue == null ? $"<{name}>" : $"[{name}({defaultValue})]";
         }
     }
     public class FieldArguParser : IArgumentParser
     {
-        private char triggerChar;
+        private char separator;
 
-        public char TriggerChar { get => triggerChar; set => triggerChar = value; }
+        public char Separator { get => separator; set => separator = value; }
         public FieldArguParser()
         {
-            TriggerChar = '=';
+            Separator = '=';
         }
         public FieldArguParser(char triggerChar)
         {
-            TriggerChar = triggerChar;
+            Separator = triggerChar;
         }
-        public bool TryParse(ref int index, ref CommandLineSegment[] arguments, out IArgument result)
+        public bool TryParse(ref int index, ref CommandSegment[] arguments, out IArgument result)
         {
             result = null;
 
             if(index < arguments.Length)
             {
-                CommandLineSegment name = arguments[index];
-                int eqindex = name.Content.IndexOf(triggerChar);   // the index of symbol 'equals': '='
+                CommandSegment name = arguments[index];
+                int eqindex = name.Content.IndexOf(separator);   // the index of symbol 'equals': '='
                 if((!name.Quoted) && eqindex > 0)
                 {
                     if(eqindex + 1 < name.Content.Length)
@@ -257,7 +257,7 @@ namespace NullLib.CommandLine
                             return false;
 
                         index++;
-                        CommandLineSegment content = arguments[index];
+                        CommandSegment content = arguments[index];
                         result = new Argument(name.Content.Substring(0, name.Content.Length - 1), content.Content);
                         index++;
                         return true;
@@ -267,34 +267,39 @@ namespace NullLib.CommandLine
 
             return false;
         }
+
+        public string FormatArgu(string name, string defaultValue)
+        {
+            return defaultValue == null ? $"<{name}{separator}value>" : $"[{name}{separator}value({defaultValue})]";
+        }
     }
     public class PropertyArguParser : IArgumentParser
     {
-        private string triggerString;
+        private string prefix;
 
-        public string TriggerString { get => triggerString; set => triggerString = value; }
+        public string Prefix { get => prefix; set => prefix = value; }
         public PropertyArguParser()
         {
-            this.TriggerString = "-";
+            this.Prefix = "-";
         }
         public PropertyArguParser(string triggerString)
         {
-            this.TriggerString = triggerString;
+            this.Prefix = triggerString;
         }
-        public bool TryParse(ref int index, ref CommandLineSegment[] arguments, out IArgument result)
+        public bool TryParse(ref int index, ref CommandSegment[] arguments, out IArgument result)
         {
             result = null;
 
             if(index < arguments.Length)
             {
-                CommandLineSegment name = arguments[index];
-                if((!name.Quoted) && name.Content.StartsWith(triggerString))
+                CommandSegment name = arguments[index];
+                if((!name.Quoted) && name.Content.StartsWith(prefix))
                 {
                     if(index + 1 >= arguments.Length)
                         return false;
 
                     index++;
-                    CommandLineSegment content = arguments[index];
+                    CommandSegment content = arguments[index];
                     result = new Argument(name.Content.Substring(1), content.Content);
                     index++;
                     return true;
@@ -302,6 +307,11 @@ namespace NullLib.CommandLine
             }
 
             return false;
+        }
+
+        public string FormatArgu(string name, string defaultValue)
+        {
+            return defaultValue == null ? $"<{prefix}{name} value>" : $"[{prefix}{name} value({defaultValue})]";
         }
     }
 }
