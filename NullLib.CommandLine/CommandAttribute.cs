@@ -56,11 +56,6 @@ namespace NullLib.CommandLine
         }
 
         /// <summary>
-        /// Infomation of calling corresponding Command, if it's not being calling, value is null
-        /// </summary>
-        public CommandInvokingInfo InvokingInfo { get; internal set; }
-
-        /// <summary>
         /// Check specified name is the correct name of current command
         /// </summary>
         /// <param name="cmdName">Name for checking</param>
@@ -81,14 +76,6 @@ namespace NullLib.CommandLine
                     curConvtr = arguConverters[i];
                 return curConvtr.ConvertBack(v);
             });
-        }
-        public string ConvertArguObject(int index, object obj)
-        {
-            for (int convtrCount = arguConverters.Length; index >= 0 && (index >= convtrCount || arguConverters[index] == null); index--) ;
-            if (index < 0)
-                return ArguConverterManager.GetConverter<ArguConverter>().ConvertBack(obj);
-            else
-                return arguConverters[index].ConvertBack(obj);
         }
 
         /// <summary>

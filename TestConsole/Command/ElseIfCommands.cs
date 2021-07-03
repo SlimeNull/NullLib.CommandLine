@@ -83,14 +83,14 @@ namespace TestConsole
 
                     public void ElseIfToDo(bool value)
                     {
-                        ElseIfCommands elseIfCommands = new ElseIfCommands(Root, ExpSrc, value);
+                        ElseIfCommands elseIfCommands = new(Root, ExpSrc, value);
                         elseIfCommands.ProcessElseIf();
                         ToEndIf = true;
                     }
 
                     public void ElseToDo()
                     {
-                        ElseCommands elseCommands = new ElseCommands(Root, Src);
+                        ElseCommands elseCommands = new(Root, Src);
                         elseCommands.ProcessElse();
                         ToEndIf = true;
                     }

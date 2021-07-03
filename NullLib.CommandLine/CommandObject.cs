@@ -14,18 +14,23 @@ namespace NullLib.CommandLine
         internal readonly object instance;
         readonly Type instanceType;
         MethodInfo[] methods;
-        ParameterInfo[][] paramInfos;
-        CommandAttribute[] methodAttributes;
-        CommandArguAttribute[][] paramAttributes;
+        private ParameterInfo[][] paramInfos;
+        CommandAttribute[] cmdAttrs;
+        CommandArguAttribute[][] paramAttrs;
 
         /// <summary>
         /// Operation's target instance of current CommandObject
         /// </summary>
-        public virtual object TargetInstance => instance;
+        public object TargetInstance => instance;
+        public event EventHandler<CommandUnResolvedEventArgs> CommandUnresolved;
 
         private void InitializeInstance()
         {
-            CommandObjectManager.GetCommandObjectInfo(instanceType, out methods, out paramInfos, out methodAttributes, out paramAttributes);
+            CommandObjectManager.GetCommandObjectInfo(instanceType, out methods, out paramInfos, out cmdAttrs, out paramAttrs);
+        }
+        private void OnCommandUnresolved(CommandUnResolvedEventArgs args)
+        {
+            CommandUnresolved?.Invoke(this, args);
         }
 
         /// <summary>
@@ -75,11 +80,22 @@ namespace NullLib.CommandLine
             return paramsForCalling;
         }
 
+        private object InnerExecuteCommand(IArgumentParser[] parsers, string cmdlinestr, CommandSegment[] cmdline, bool ignoreCases)
+        {
+            CommandParser.SplitCommandInfo(cmdline, out var cmdname, out var argsSegments);
+            IArgument[] args = CommandParser.ParseArguments(parsers, argsSegments);
+            if (CommandInvoker.TryInvoke(methods, cmdAttrs, paramAttrs, instance, cmdname, args, ignoreCases ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal, out object result))
+                return result;
+
+            CommandUnResolvedEventArgs eArgs = new CommandUnResolvedEventArgs(cmdlinestr, cmdline, args, cmdname, argsSegments);
+            OnCommandUnresolved(eArgs);
+            if (!eArgs.Handled)
+                throw new CommandEntryPointNotFoundException(cmdname);
+            return null;
+        }
         public object ExecuteCommand(IArgumentParser[] parsers, CommandSegment[] cmdline, bool ignoreCases)
         {
-            CommandParser.SplitCommandInfo(cmdline, out var cmdname, out var arguments);
-            IArgument[] args = CommandParser.ParseArguments(parsers, arguments);
-            return CommandInvoker.Invoke(methods, methodAttributes, paramAttributes, instance, cmdname, args, ignoreCases ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+            return InnerExecuteCommand(parsers, null, cmdline, ignoreCases);
         }
         public object ExecuteCommand(IArgumentParser[] parsers, CommandSegment[] cmdline)
         {
@@ -87,8 +103,8 @@ namespace NullLib.CommandLine
         }
         public object ExecuteCommand(IArgumentParser[] parsers, string cmdline, bool ignoreCases)
         {
-            CommandParser.SplitCommandLine(cmdline, out var cmdinfo);
-            return ExecuteCommand(parsers, cmdinfo, ignoreCases);
+            CommandParser.SplitCommandLine(cmdline, out var cmdSegs);
+            return InnerExecuteCommand(parsers, cmdline, cmdSegs, ignoreCases);
         }
         public object ExecuteCommand(IArgumentParser[] parsers, string cmdline)
         {
@@ -96,7 +112,7 @@ namespace NullLib.CommandLine
         }
         public object ExecuteCommand(CommandSegment[] cmdline, bool ignoreCases)
         {
-            return ExecuteCommand(CommandParser.DefaultParsers, cmdline, ignoreCases);
+            return InnerExecuteCommand(CommandParser.DefaultParsers, null, cmdline, ignoreCases);
         }
         public object ExecuteCommand(CommandSegment[] cmdline)
         {
@@ -127,7 +143,7 @@ namespace NullLib.CommandLine
         {
             CommandParser.SplitCommandInfo(cmdline, out var cmdname, out var cmdparams);
             var args = CommandParser.ParseArguments(parsers, cmdparams);
-            return CommandInvoker.CanInvoke(methods, methodAttributes, paramAttributes, cmdname, args, ignoreCases ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+            return CommandInvoker.CanInvoke(cmdAttrs, paramAttrs, cmdname, args, ignoreCases ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
         }
         /// <summary>
         /// Check if specified cmdline can be executed
@@ -217,7 +233,7 @@ namespace NullLib.CommandLine
         {
             CommandParser.SplitCommandInfo(cmdline, out var cmdname, out var arguments);
             IArgument[] args = CommandParser.ParseArguments(parsers, arguments);
-            return CommandInvoker.TryInvoke(methods, methodAttributes, paramAttributes, instance, cmdname, args, ignoreCases ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal, out result);
+            return CommandInvoker.TryInvoke(methods, cmdAttrs, paramAttrs, instance, cmdname, args, ignoreCases ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal, out result);
         }
         public bool TryExecuteCommand(IArgumentParser[] parsers, CommandSegment[] cmdline, out object result)
         {
@@ -250,11 +266,11 @@ namespace NullLib.CommandLine
         }
 
 
-        protected string GenCommandDefinition(IArgumentParser parser, int index, out string cmdName, out string[] args)
+        private string GenCommandDefinition(IArgumentParser parser, int index, out string cmdName, out string[] args)
         {
             cmdName = methods[index].Name;
-            string[] defaultValues = methodAttributes[index].ConvertArguObjects(paramAttributes[index].Select(v => v.DefaultValue)).ToArray();
-            args = paramAttributes[index].Select((v, i) => parser.FormatArgu(v.CommandArguName, defaultValues[i])).ToArray();
+            string[] defaultValues = cmdAttrs[index].ConvertArguObjects(paramAttrs[index].Select(v => v.DefaultValue)).ToArray();
+            args = paramAttrs[index].Select((v, i) => parser.FormatArgu(v.CommandArguName, defaultValues[i])).ToArray();
             return $"{cmdName} {string.Join(" ", args)}";
         }
         //protected bool GenMethodOverviewInfo(string name, StringComparison stringComparison, out string result)

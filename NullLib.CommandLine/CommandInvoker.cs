@@ -281,13 +281,13 @@ namespace NullLib.CommandLine
         {
             return Invoke(methods, attributes, paramInfos, instance, methodName, args, StringComparison.Ordinal);
         }                                   // not root
-        public static bool CanInvoke(MethodInfo method, CommandAttribute attribute, CommandArguAttribute[] paramInfos, string methodName, IArgument[] args)
+        public static bool CanInvoke(CommandAttribute attribute, CommandArguAttribute[] paramInfos, string methodName, IArgument[] args)
         {
-            return CanInvoke(method, attribute, paramInfos, methodName, args, StringComparison.Ordinal);
+            return CanInvoke(attribute, paramInfos, methodName, args, StringComparison.Ordinal);
         }
-        public static bool CanInvoke(MethodInfo[] methods, CommandAttribute[] attributes, CommandArguAttribute[][] paramInfos, string methodName, IArgument[] args)
+        public static bool CanInvoke(CommandAttribute[] attributes, CommandArguAttribute[][] paramInfos, string methodName, IArgument[] args)
         {
-            return CanInvoke(methods, attributes, paramInfos, methodName, args, StringComparison.Ordinal);
+            return CanInvoke(attributes, paramInfos, methodName, args, StringComparison.Ordinal);
         }
         #endregion
 
@@ -348,17 +348,17 @@ namespace NullLib.CommandLine
 
             throw new CommandEntryPointNotFoundException(methodName);
         }
-        public static bool CanInvoke(MethodInfo method, CommandAttribute attribute, CommandArguAttribute[] paramInfos, string methodName, IArgument[] args, StringComparison stringComparison)
+        public static bool CanInvoke(CommandAttribute cmdattrs, CommandArguAttribute[] paramInfos, string methodName, IArgument[] args, StringComparison stringComparison)
         {
             return
-                attribute.IsCorrectName(methodName, stringComparison) &&
+                cmdattrs.IsCorrectName(methodName, stringComparison) &&
                 TryFormatArguments(paramInfos, args, stringComparison, out var formatedArgs) &&
-                TryConvertArguments(paramInfos, attribute.ArgumentConverters, ref formatedArgs, stringComparison);
+                TryConvertArguments(paramInfos, cmdattrs.ArgumentConverters, ref formatedArgs, stringComparison);
         }
-        public static bool CanInvoke(MethodInfo[] methods, CommandAttribute[] attributes, CommandArguAttribute[][] paramInfos, string methodName, IArgument[] args, StringComparison stringComparison)
+        public static bool CanInvoke(CommandAttribute[] cmdattrs, CommandArguAttribute[][] paramInfos, string methodName, IArgument[] args, StringComparison stringComparison)
         {
-            for (int i = 0, end = methods.Length; i < end; i++)
-                if (CanInvoke(methods[i], attributes[i], paramInfos[i], methodName, args, stringComparison))
+            for (int i = 0, end = cmdattrs.Length; i < end; i++)
+                if (CanInvoke(cmdattrs[i], paramInfos[i], methodName, args, stringComparison))
                     return true;
             return false;
         }

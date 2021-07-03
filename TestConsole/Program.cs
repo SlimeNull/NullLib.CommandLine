@@ -21,6 +21,12 @@ namespace TestConsole
                 new ArguParser(),
             };
 
+            obj.CommandUnresolved += (_s, _e) =>
+            {
+                if (_e.CommandName != "FFF")
+                    _e.Handled = true;
+            };
+
             Console.WriteLine("Easy command. Copyright 2021 Null.\n");
             while (true)
             {

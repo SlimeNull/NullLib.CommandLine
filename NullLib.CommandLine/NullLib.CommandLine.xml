@@ -316,11 +316,6 @@
             </summary>
             <param name="arguConverters"></param>
         </member>
-        <member name="P:NullLib.CommandLine.CommandAttribute.InvokingInfo">
-            <summary>
-            Infomation of calling corresponding Command, if it's not being calling, value is null
-            </summary>
-        </member>
         <member name="M:NullLib.CommandLine.CommandAttribute.IsCorrectName(System.String,System.StringComparison)">
             <summary>
             Check specified name is the correct name of current command

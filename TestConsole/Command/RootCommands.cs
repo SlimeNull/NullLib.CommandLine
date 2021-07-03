@@ -86,7 +86,7 @@ namespace TestConsole
 
             void IfToDo(bool ok)
             {
-                IfCommands ifCommands = new IfCommands(Self, ok);
+                IfCommands ifCommands = new(Self, ok);
                 ifCommands.ProcessIf();
             }
             public void If(ObjectComparison comparision, string param)
