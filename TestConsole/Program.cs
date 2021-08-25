@@ -11,6 +11,10 @@ namespace TestConsole
 {
     partial class Program
     {
+        static Program()
+        {
+            CommandParser.EscapeChar = '`';
+        }
         static void Main(string[] args)
         {
             CommandObject<MyCommands> obj = new();       // 创建一个命令行对象

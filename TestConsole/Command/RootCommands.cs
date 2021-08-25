@@ -8,6 +8,38 @@ namespace TestConsole
     {
         partial class MyCommands
         {
+            public class MathCommands
+            {
+
+                [Command(typeof(FloatArguConverter), typeof(FloatArguConverter), Description = "")]      // the build-in ArgumentConverter in NullLib.CommandLine
+                public float Plus(float a, float b)
+                {
+                    return a + b;
+                }
+                [Command(typeof(FloatArguConverter))]        // if the following converters is same as the last one, you can ignore these
+                public float Mul(float a, float b)
+                {
+                    return a * b;
+                }
+                [Command(typeof(FloatArguConverter))]
+                public float Div(
+                    [CommandArgu(CommandArguAlias = "awa")]
+                float a,
+                    [CommandArgu(CommandArguAlias = "qwq")]
+                float b)
+                {
+                    return a / b;
+                }
+                [Command(typeof(DoubleArguConverter))]
+                public double Log(double n, double newBase = System.Math.E)    // you can also use optional parameter
+                {
+                    return System.Math.Log(n, newBase);
+                }
+            }
+
+            [CommandHost]
+            public CommandObject<MathCommands> Math { get; } = new CommandObject<MathCommands>();
+
             public CommandObject<MyCommands> Self { get; }
             public static object STDOUT
             {
@@ -33,30 +65,6 @@ namespace TestConsole
                 EQ, NE, GT, LT, GE, LE, ET
             }
 
-            [Command(typeof(FloatArguConverter), typeof(FloatArguConverter), Description = "")]      // the build-in ArgumentConverter in NullLib.CommandLine
-            public float Plus(float a, float b)
-            {
-                return a + b;
-            }
-            [Command(typeof(FloatArguConverter))]        // if the following converters is same as the last one, you can ignore these
-            public float Mul(float a, float b)
-            {
-                return a * b;
-            }
-            [Command(typeof(FloatArguConverter))]
-            public float Div(
-                [CommandArgu(CommandArguAlias = "awa")]
-                float a,
-                [CommandArgu(CommandArguAlias = "qwq")]
-                float b)
-            {
-                return a / b;
-            }
-            [Command(typeof(DoubleArguConverter))]
-            public double Log(double n, double newBase = Math.E)    // you can also use optional parameter
-            {
-                return Math.Log(n, newBase);
-            }
             [Command(typeof(ForeachArguConverter<FloatArguConverter>))]   // each string of array will be converted by FloatConverter
             public float Sum(params float[] nums)                 // variable length parameter method is supported
             {

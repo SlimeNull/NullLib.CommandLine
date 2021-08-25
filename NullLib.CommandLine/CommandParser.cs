@@ -9,6 +9,12 @@ namespace NullLib.CommandLine
     /// </summary>
     public static class CommandParser
     {
+        private static char escapeChar = '\\';
+
+        /// <summary>
+        /// EscapeChar for string parsing, defualt is '\\'
+        /// </summary>
+        public static char EscapeChar { get => escapeChar; set => escapeChar = value; }
         /// <summary>
         /// Default parsers for parse commandline string.
         /// </summary>
@@ -49,7 +55,7 @@ namespace NullLib.CommandLine
                 }
                 else
                 {
-                    if (i == '\\')
+                    if (i == escapeChar)
                     {
                         escape = true;
                     }
@@ -81,7 +87,7 @@ namespace NullLib.CommandLine
 
                                 quote = true;
                             }
-                            else if (i == ' ')
+                            else if (char.IsWhiteSpace(i))
                             {
                                 if (temp.Length > 0)
                                 {
@@ -104,6 +110,13 @@ namespace NullLib.CommandLine
             result = rstBulder.ToArray();
         }
 
+        public static void SplitCommandLineFromStartupArgs(out CommandSegment[] result)
+        {
+            SplitCommandLine(Environment.CommandLine, out var tmprst);
+            result = new CommandSegment[tmprst.Length - 1];
+            Array.Copy(tmprst, 1, result, 0, result.Length);
+        }
+
         /// <summary>
         /// Seperate command name and command arguments from commandline segements.
         /// </summary>
@@ -123,6 +136,16 @@ namespace NullLib.CommandLine
                 cmdname = "";
                 arguments = new CommandSegment[0];
             }
+        }
+
+        public static void SplitCommandInfo(IArgument[] cmdline, out string cmdname, out IArgument[] arguments)
+        {
+            if (cmdline.Length < 1)
+                throw new ArgumentOutOfRangeException(nameof(cmdline), "Length must be greater than 0");
+
+            cmdname = cmdline[0].Content;
+            arguments = new IArgument[cmdline.Length - 1];
+            Array.Copy(cmdline, 1, arguments, 0, arguments.Length);
         }
 
         public static IArgument[] ParseArguments(IList<IArgumentParser> parsers, CommandSegment[] arguments)

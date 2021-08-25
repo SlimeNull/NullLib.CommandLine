@@ -11,12 +11,10 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Specify a method can be execute by 
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
     public sealed class CommandAttribute : Attribute
     {
         readonly IArgumentConverter[] arguConverters;
-        private string commandName;
-        private string commandAlias;
 
         /// <summary>
         /// ArgumentConverters for current command
@@ -51,6 +49,63 @@ namespace NullLib.CommandLine
 
         public void LoadTarget(MethodInfo info)
         {
+            if (CommandName == null)
+                CommandName = info.Name;
+        }
+
+        /// <summary>
+        /// Check specified name is the correct name of current command
+        /// </summary>
+        /// <param name="cmdName">Name for checking</param>
+        /// <param name="stringComparison">StringComparison</param>
+        /// <returns></returns>
+        public bool IsCorrectName(string cmdName, StringComparison stringComparison)
+        {
+            return cmdName != null && (cmdName.Equals(CommandName, stringComparison) || cmdName.Equals(CommandAlias, stringComparison));
+        }
+
+        public IEnumerable<string> ConvertArguObjects(IEnumerable<object> objs)
+        {
+            IArgumentConverter curConvtr = ArguConverterManager.GetConverter<ArguConverter>();
+            int converterCount = arguConverters.Length;
+            return objs.Select((v, i) =>
+            {
+                if (i < converterCount && arguConverters[i] != null)
+                    curConvtr = arguConverters[i];
+                return curConvtr.ConvertBack(v);
+            });
+        }
+
+        /// <summary>
+        /// Name of Command, default is same as Method name
+        /// </summary>
+        public string CommandName { get; set; }
+        /// <summary>
+        /// Alias of Command, default is null (disabled)
+        /// </summary>
+        public string CommandAlias { get; set; }
+        /// <summary>
+        /// Description about current command
+        /// </summary>
+        public string Description { get; set; }
+    }
+    [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
+    public sealed class CommandHostAttribute : Attribute
+    {
+        private string commandName;
+        private string commandAlias;
+
+        /// <summary>
+        /// Initialize a new instance of CommandAttribute with no special IArgumentConverter
+        /// If your method only has string parameters, you can use this.
+        /// </summary>
+        public CommandHostAttribute()
+        {
+            
+        }
+
+        public void LoadTarget(PropertyInfo info)
+        {
             if (commandName == null)
                 commandName = info.Name;
         }
@@ -64,18 +119,6 @@ namespace NullLib.CommandLine
         public bool IsCorrectName(string cmdName, StringComparison stringComparison)
         {
             return cmdName != null && (cmdName.Equals(commandName, stringComparison) || cmdName.Equals(commandAlias, stringComparison));
-        }
-
-        public IEnumerable<string> ConvertArguObjects(IEnumerable<object> objs)
-        {
-            IArgumentConverter curConvtr = ArguConverterManager.GetConverter<ArguConverter>();
-            int converterCount = arguConverters.Length;
-            return objs.Select((v, i) =>
-            {
-                if (i < converterCount && arguConverters[i] != null)
-                    curConvtr = arguConverters[i];
-                return curConvtr.ConvertBack(v);
-            });
         }
 
         /// <summary>

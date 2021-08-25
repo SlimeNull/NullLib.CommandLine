@@ -34,6 +34,11 @@ namespace NullLib.CommandLine
         /// <param name="argu">Object to convert</param>
         /// <returns>Conversion result</returns>
         object Convert(object argu);
+        /// <summary>
+        /// Convert object back to string
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         string ConvertBack(object obj);
         /// <summary>
         /// Convert from a string
@@ -49,6 +54,12 @@ namespace NullLib.CommandLine
         /// <param name="result">Conversion result</param>
         /// <returns>If the Conversion was successed</returns>
         bool TryConvert(object argu, out object result);
+        /// <summary>
+        /// Convert object back to string
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
         bool TryConvertBack(object obj, out string result);
     }
     /// <summary>
@@ -69,6 +80,11 @@ namespace NullLib.CommandLine
         /// <param name="argu">Object to convert</param>
         /// <returns>Conversion result</returns>
         new TResult Convert(object argu);
+        /// <summary>
+        /// Convert <typeparamref name="TResult"/> back to string
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         string ConvertBack(TResult obj);
         /// <summary>
         /// Try to convert from a string
@@ -84,6 +100,12 @@ namespace NullLib.CommandLine
         /// <param name="result"></param>
         /// <returns></returns>
         bool TryConvert(object argu, out TResult result);
+        /// <summary>
+        /// Convert <typeparamref name="TResult"/> back to string
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
         bool TryConvertBack(TResult obj, out string result);
     }
 
@@ -138,8 +160,14 @@ namespace NullLib.CommandLine
     public abstract class ArguConverterBase : IArgumentConverter
     {
         private readonly Type targetType = typeof(string);
+        /// <summary>
+        /// Argument Conversion Target Type
+        /// </summary>
         public virtual Type TargetType { get => targetType; }
 
+        /// <summary>
+        /// If this converter is cases ignored
+        /// </summary>
         public virtual bool IgnoreCases { get; set; }
 
         public virtual object Convert(string argu)

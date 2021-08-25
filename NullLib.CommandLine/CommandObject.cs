@@ -13,20 +13,26 @@ namespace NullLib.CommandLine
     {
         internal readonly object instance;
         readonly Type instanceType;
-        MethodInfo[] methods;
+        private MethodInfo[] methods;
         private ParameterInfo[][] paramInfos;
-        CommandAttribute[] cmdAttrs;
-        CommandArguAttribute[][] paramAttrs;
+        private PropertyInfo[] commandHosts;
+        private CommandAttribute[] cmdAttrs;
+        private CommandArguAttribute[][] paramAttrs;
+        private CommandHostAttribute[] commandHostAttributes;
 
         /// <summary>
         /// Operation's target instance of current CommandObject
         /// </summary>
         public object TargetInstance => instance;
+        /// <summary>
+        /// Type of TargetInstance
+        /// </summary>
+        public Type IntanceType => instanceType;
         public event EventHandler<CommandUnResolvedEventArgs> CommandUnresolved;
 
         private void InitializeInstance()
         {
-            CommandObjectManager.GetCommandObjectInfo(instanceType, out methods, out paramInfos, out cmdAttrs, out paramAttrs);
+            CommandObjectManager.GetCommandObjectInfo(instanceType, out methods, out paramInfos, out commandHosts, out cmdAttrs, out paramAttrs, out commandHostAttributes);
         }
         private void OnCommandUnresolved(CommandUnResolvedEventArgs args)
         {
@@ -79,12 +85,57 @@ namespace NullLib.CommandLine
 
             return paramsForCalling;
         }
+        
+        private bool CanExecuteCommandHost(string cmdname, IArgument[] args, StringComparison stringComparison)
+        {
+            for (int i = 0, iend = commandHostAttributes.Length; i < iend; i++)
+            {
+                CommandHostAttribute hostattr = commandHostAttributes[i];
+                if (hostattr.IsCorrectName(cmdname, stringComparison))
+                {
+                    if (commandHosts[i].GetValue(instance) is CommandObject host)
+                    {
+                        CommandParser.SplitCommandInfo(args, out var _cmdname, out var _args);
 
-        private object InnerExecuteCommand(IArgumentParser[] parsers, string cmdlinestr, CommandSegment[] cmdline, bool ignoreCases)
+                        if (CommandInvoker.CanInvoke(host.cmdAttrs, host.paramAttrs, _cmdname, _args, stringComparison))
+                            return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+        private bool TryExecuteCommandHost(string cmdname, IArgument[] args, StringComparison stringComparison, out object result)
+        {
+            for (int i = 0, iend = commandHostAttributes.Length; i < iend; i++)
+            {
+                CommandHostAttribute hostattr = commandHostAttributes[i];
+                if (hostattr.IsCorrectName(cmdname, stringComparison))
+                {
+                    if (commandHosts[i].GetValue(instance) is CommandObject host)
+                    {
+                        CommandParser.SplitCommandInfo(args, out var _cmdname, out var _args);
+
+                        if (CommandInvoker.TryInvoke(host.methods, host.cmdAttrs, host.paramAttrs, host.instance, _cmdname, _args, stringComparison, out result))
+                            return true;
+                    }
+                }
+            }
+
+            result = null;
+            return false;
+        }
+        internal object InnerExecuteCommand(IArgumentParser[] parsers, string cmdlinestr, CommandSegment[] cmdline, bool ignoreCases)
         {
             CommandParser.SplitCommandInfo(cmdline, out var cmdname, out var argsSegments);
             IArgument[] args = CommandParser.ParseArguments(parsers, argsSegments);
-            if (CommandInvoker.TryInvoke(methods, cmdAttrs, paramAttrs, instance, cmdname, args, ignoreCases ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal, out object result))
+            StringComparison stringComparison = ignoreCases.GetStringComparison();
+            object result;
+
+            if (TryExecuteCommandHost(cmdname, args, stringComparison, out result))
+                return result;
+
+            if (CommandInvoker.TryInvoke(methods, cmdAttrs, paramAttrs, instance, cmdname, args, stringComparison, out result))
                 return result;
 
             CommandUnResolvedEventArgs eArgs = new CommandUnResolvedEventArgs(cmdlinestr, cmdline, args, cmdname, argsSegments);
@@ -143,7 +194,12 @@ namespace NullLib.CommandLine
         {
             CommandParser.SplitCommandInfo(cmdline, out var cmdname, out var cmdparams);
             var args = CommandParser.ParseArguments(parsers, cmdparams);
-            return CommandInvoker.CanInvoke(cmdAttrs, paramAttrs, cmdname, args, ignoreCases ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+
+            StringComparison stringComparison = ignoreCases.GetStringComparison();
+            if (CanExecuteCommandHost(cmdname, args, stringComparison))
+                return true;
+
+            return CommandInvoker.CanInvoke(cmdAttrs, paramAttrs, cmdname, args, stringComparison);
         }
         /// <summary>
         /// Check if specified cmdline can be executed
@@ -233,7 +289,12 @@ namespace NullLib.CommandLine
         {
             CommandParser.SplitCommandInfo(cmdline, out var cmdname, out var arguments);
             IArgument[] args = CommandParser.ParseArguments(parsers, arguments);
-            return CommandInvoker.TryInvoke(methods, cmdAttrs, paramAttrs, instance, cmdname, args, ignoreCases ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal, out result);
+            StringComparison stringComparison = ignoreCases.GetStringComparison();
+
+            if (TryExecuteCommandHost(cmdname, args, stringComparison, out result))
+                return true;
+
+            return CommandInvoker.TryInvoke(methods, cmdAttrs, paramAttrs, instance, cmdname, args, stringComparison, out result);
         }
         public bool TryExecuteCommand(IArgumentParser[] parsers, CommandSegment[] cmdline, out object result)
         {
@@ -292,13 +353,15 @@ namespace NullLib.CommandLine
         /// Initialize an CommandObject instance, and set the TargetInstance property as a new instance initialized by the default constructor of <typeparamref name="T"/>
         /// </summary>
         public CommandObject() :
-            base(Activator.CreateInstance<T>()) { }
+            base(Activator.CreateInstance<T>())
+        { }
         /// <summary>
         /// Initialize an CommandObject instance, and set the param <paramref name="instance"/> as TargetInstance
         /// </summary>
         /// <param name="instance"></param>
         public CommandObject(T instance) :
-            base(instance) { }
+            base(instance)
+        { }
 
         /// <summary>
         /// Operation's target instance of current CommnadObject
@@ -310,6 +373,7 @@ namespace NullLib.CommandLine
     /// </summary>
     public static class CommandObjectManager
     {
+        private static Type cmdObjType = typeof(CommandObject);
         private static readonly Dictionary<Type, CommandObjectInfo> cmdObjInfos = new();
 
         public static IEnumerable<Type> Keys => cmdObjInfos.Keys;
@@ -321,37 +385,60 @@ namespace NullLib.CommandLine
         {
             return cmdObjInfos.Remove(type);
         }
-        public static void GetCommandObjectInfo(Type type, out MethodInfo[] methods, out ParameterInfo[][] paramInfos, out CommandAttribute[] methodAttributes, out CommandArguAttribute[][] paramAttributes)
+        public static void GetCommandObjectInfo(Type type,
+            out MethodInfo[] methods, out ParameterInfo[][] paramInfos, out PropertyInfo[] commandHosts,
+            out CommandAttribute[] methodAttributes, out CommandArguAttribute[][] paramAttributes, out CommandHostAttribute[] commandHostAttributes)
         {
             if (cmdObjInfos.TryGetValue(type, out var cmdObjInfo))
             {
                 methods = cmdObjInfo.Methods;
                 paramInfos = cmdObjInfo.ParamInfos;
+                commandHosts = cmdObjInfo.CommandHosts;
                 methodAttributes = cmdObjInfo.MethodAttributes;
                 paramAttributes = cmdObjInfo.ParamAttributes;
+                commandHostAttributes = cmdObjInfo.CommandHostAttributes;
             }
             else
             {
-                NewCommandObjectInfo(type, out methods, out paramInfos, out methodAttributes, out paramAttributes);
-                cmdObjInfos[type] = new CommandObjectInfo(methods, paramInfos, methodAttributes, paramAttributes);
+                NewCommandObjectInfo(type, out methods, out paramInfos, out commandHosts, out methodAttributes, out paramAttributes, out commandHostAttributes);
+                cmdObjInfos[type] = new CommandObjectInfo(methods, paramInfos, commandHosts, methodAttributes, paramAttributes, commandHostAttributes);
             }
         }
-        public static void NewCommandObjectInfo(Type type, out MethodInfo[] methods, out ParameterInfo[][] paramInfos, out CommandAttribute[] methodAttributes, out CommandArguAttribute[][] paramAttributes)
+        public static void NewCommandObjectInfo(Type type,
+            out MethodInfo[] methods, out ParameterInfo[][] paramInfos, out PropertyInfo[] commandHosts,
+            out CommandAttribute[] methodAttributes, out CommandArguAttribute[][] paramAttributes, out CommandHostAttribute[] commandHostAttributes)
         {
             List<MethodInfo> _methods = new();
             List<ParameterInfo[]> _paramInfos = new();
+            List<PropertyInfo> _commandHosts = new();
             List<CommandAttribute> _cmdAttrs = new();
             List<CommandArguAttribute[]> _arguAttrs = new();
+            List<CommandHostAttribute> _commandHostAttributes = new();
+
+            foreach (var property in type.GetProperties())
+            {
+                CommandHostAttribute attribute = property.GetCustomAttribute<CommandHostAttribute>();
+                if (attribute is not null)
+                {
+                    if (cmdObjType.IsAssignableFrom(property.PropertyType))
+                    {
+                        attribute.LoadTarget(property);
+
+                        _commandHosts.Add(property);
+                        _commandHostAttributes.Add(attribute);
+                    }
+                }
+            }
 
             foreach (var method in type.GetMethods())
             {
                 CommandAttribute attribute = method.GetCustomAttribute<CommandAttribute>();
-                if (attribute != null)
+                if (attribute is not null)
                 {
                     attribute.LoadTarget(method);
                     ParameterInfo[] __paramInfos = method.GetParameters();
                     CommandArguAttribute[] __arguAttributes = new CommandArguAttribute[__paramInfos.Length];
-                    
+
                     for (int i = 0, end = __paramInfos.Length; i < end; i++)
                     {
                         ParameterInfo curParam = __paramInfos[i];
@@ -369,23 +456,30 @@ namespace NullLib.CommandLine
 
             methods = _methods.ToArray();
             paramInfos = _paramInfos.ToArray();
+            commandHosts = _commandHosts.ToArray();
             methodAttributes = _cmdAttrs.ToArray();
             paramAttributes = _arguAttrs.ToArray();
+            commandHostAttributes = _commandHostAttributes.ToArray();
         }
-
         struct CommandObjectInfo
         {
             public MethodInfo[] Methods;
             public ParameterInfo[][] ParamInfos;
+            public PropertyInfo[] CommandHosts;
             public CommandAttribute[] MethodAttributes;
             public CommandArguAttribute[][] ParamAttributes;
+            public CommandHostAttribute[] CommandHostAttributes;
 
-            public CommandObjectInfo(MethodInfo[] methods, ParameterInfo[][] paramInfos, CommandAttribute[] methodAttributes, CommandArguAttribute[][] paramAttributes)
+            public CommandObjectInfo(
+                MethodInfo[] methods, ParameterInfo[][] paramInfos, PropertyInfo[] commandHosts,
+                CommandAttribute[] methodAttributes, CommandArguAttribute[][] paramAttributes, CommandHostAttribute[] commandHostAttributes)
             {
                 this.Methods = methods;
                 this.ParamInfos = paramInfos;
+                this.CommandHosts = commandHosts;
                 this.MethodAttributes = methodAttributes;
                 this.ParamAttributes = paramAttributes;
+                this.CommandHostAttributes = commandHostAttributes;
             }
         }
     }

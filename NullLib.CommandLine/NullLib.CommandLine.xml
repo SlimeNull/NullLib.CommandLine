@@ -135,6 +135,13 @@
             <param name="argu">Object to convert</param>
             <returns>Conversion result</returns>
         </member>
+        <member name="M:NullLib.CommandLine.IArgumentConverter.ConvertBack(System.Object)">
+            <summary>
+            Convert object back to string
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
         <member name="M:NullLib.CommandLine.IArgumentConverter.TryConvert(System.String,System.Object@)">
             <summary>
             Convert from a string
@@ -150,6 +157,14 @@
             <param name="argu">Object to convert</param>
             <param name="result">Conversion result</param>
             <returns>If the Conversion was successed</returns>
+        </member>
+        <member name="M:NullLib.CommandLine.IArgumentConverter.TryConvertBack(System.Object,System.String@)">
+            <summary>
+            Convert object back to string
+            </summary>
+            <param name="obj"></param>
+            <param name="result"></param>
+            <returns></returns>
         </member>
         <member name="T:NullLib.CommandLine.IArgumentConverter`1">
             <summary>
@@ -171,6 +186,13 @@
             <param name="argu">Object to convert</param>
             <returns>Conversion result</returns>
         </member>
+        <member name="M:NullLib.CommandLine.IArgumentConverter`1.ConvertBack(`0)">
+            <summary>
+            Convert <typeparamref name="TResult"/> back to string
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
         <member name="M:NullLib.CommandLine.IArgumentConverter`1.TryConvert(System.String,`0@)">
             <summary>
             Try to convert from a string
@@ -184,6 +206,14 @@
             Try to convert from a object
             </summary>
             <param name="argu"></param>
+            <param name="result"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NullLib.CommandLine.IArgumentConverter`1.TryConvertBack(`0,System.String@)">
+            <summary>
+            Convert <typeparamref name="TResult"/> back to string
+            </summary>
+            <param name="obj"></param>
             <param name="result"></param>
             <returns></returns>
         </member>
@@ -214,6 +244,16 @@
         <member name="T:NullLib.CommandLine.ArguConverterBase">
             <summary>
             Base class of ArgumentConverter
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.ArguConverterBase.TargetType">
+            <summary>
+            Argument Conversion Target Type
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.ArguConverterBase.IgnoreCases">
+            <summary>
+            If this converter is cases ignored
             </summary>
         </member>
         <member name="T:NullLib.CommandLine.ArguConverterBase`1">
@@ -339,6 +379,35 @@
             Description about current command
             </summary>
         </member>
+        <member name="M:NullLib.CommandLine.CommandHostAttribute.#ctor">
+            <summary>
+            Initialize a new instance of CommandAttribute with no special IArgumentConverter
+            If your method only has string parameters, you can use this.
+            </summary>
+        </member>
+        <member name="M:NullLib.CommandLine.CommandHostAttribute.IsCorrectName(System.String,System.StringComparison)">
+            <summary>
+            Check specified name is the correct name of current command
+            </summary>
+            <param name="cmdName">Name for checking</param>
+            <param name="stringComparison">StringComparison</param>
+            <returns></returns>
+        </member>
+        <member name="P:NullLib.CommandLine.CommandHostAttribute.CommandName">
+            <summary>
+            Name of Command, default is same as Method name
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.CommandHostAttribute.CommandAlias">
+            <summary>
+            Alias of Command, default is null (disabled)
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.CommandHostAttribute.Description">
+            <summary>
+            Description about current command
+            </summary>
+        </member>
         <member name="T:NullLib.CommandLine.CommandArguAttribute">
             <summary>
             Commnad parameter infomation
@@ -362,6 +431,11 @@
         <member name="P:NullLib.CommandLine.CommandObject.TargetInstance">
             <summary>
             Operation's target instance of current CommandObject
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.CommandObject.IntanceType">
+            <summary>
+            Type of TargetInstance
             </summary>
         </member>
         <member name="M:NullLib.CommandLine.CommandObject.#ctor(System.Object)">
@@ -492,6 +566,11 @@
         <member name="T:NullLib.CommandLine.CommandParser">
             <summary>
             Provide methods for parsing command
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.CommandParser.EscapeChar">
+            <summary>
+            EscapeChar for string parsing, defualt is '\\'
             </summary>
         </member>
         <member name="P:NullLib.CommandLine.CommandParser.DefaultParsers">

@@ -134,8 +134,7 @@ namespace NullLib.CommandLine
         }
         public static bool TryConvertArguments(CommandArguAttribute[] paramInfos, IArgumentConverter[] converters, ref IArgument[] args, StringComparison stringComparison)
         {
-            const StringComparison ignoreCasesComparison = StringComparison.OrdinalIgnoreCase | StringComparison.CurrentCultureIgnoreCase | StringComparison.InvariantCultureIgnoreCase;
-            bool ignoreCases = ignoreCasesComparison.HasFlag(stringComparison);
+            bool ignoreCases = stringComparison.IsIgnoreCase();
 
             IEnumerator enumerator = converters.GetEnumerator();
             IArgumentConverter curConvtr = ArguConverterManager.GetConverter<ArguConverter>();
@@ -227,8 +226,7 @@ namespace NullLib.CommandLine
         }
         public static IArgument[] ConvertArguments(MethodInfo method, CommandArguAttribute[] paramInfos, IArgumentConverter[] converters, IArgument[] args, StringComparison stringComparison)
         {
-            const StringComparison ignoreCasesComparison = StringComparison.OrdinalIgnoreCase | StringComparison.CurrentCultureIgnoreCase | StringComparison.InvariantCultureIgnoreCase;
-            bool ignoreCases = ignoreCasesComparison.HasFlag(stringComparison);
+            bool ignoreCases = stringComparison.IsIgnoreCase();
 
             IEnumerator enumerator = converters.GetEnumerator();
             IArgumentConverter curConvtr = ArguConverterManager.GetConverter<ArguConverter>();
