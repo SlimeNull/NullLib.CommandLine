@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace NullLib.CommandLine
 {
@@ -18,7 +19,7 @@ namespace NullLib.CommandLine
         private PropertyInfo[] commandHosts;
         private CommandAttribute[] cmdAttrs;
         private CommandArguAttribute[][] paramAttrs;
-        private CommandHostAttribute[] commandHostAttributes;
+        private CommandHostAttribute[] commandHostAttrs;
 
         /// <summary>
         /// Operation's target instance of current CommandObject
@@ -32,7 +33,7 @@ namespace NullLib.CommandLine
 
         private void InitializeInstance()
         {
-            CommandObjectManager.GetCommandObjectInfo(instanceType, out methods, out paramInfos, out commandHosts, out cmdAttrs, out paramAttrs, out commandHostAttributes);
+            CommandObjectManager.GetCommandObjectInfo(instanceType, out methods, out paramInfos, out commandHosts, out cmdAttrs, out paramAttrs, out commandHostAttrs);
         }
         private void OnCommandUnresolved(CommandUnResolvedEventArgs args)
         {
@@ -46,6 +47,9 @@ namespace NullLib.CommandLine
         public CommandObject(object instance)
         {
             this.instance = instance ?? throw new ArgumentNullException(nameof(instance));
+
+            if (instance is NCommand ncmd)
+                ncmd.CommandObject = this;
 
             instanceType = instance.GetType();
             InitializeInstance();
@@ -85,12 +89,12 @@ namespace NullLib.CommandLine
 
             return paramsForCalling;
         }
-        
+
         private bool CanExecuteCommandHost(string cmdname, IArgument[] args, StringComparison stringComparison)
         {
-            for (int i = 0, iend = commandHostAttributes.Length; i < iend; i++)
+            for (int i = 0, iend = commandHostAttrs.Length; i < iend; i++)
             {
-                CommandHostAttribute hostattr = commandHostAttributes[i];
+                CommandHostAttribute hostattr = commandHostAttrs[i];
                 if (hostattr.IsCorrectName(cmdname, stringComparison))
                 {
                     if (commandHosts[i].GetValue(instance) is CommandObject host)
@@ -107,9 +111,9 @@ namespace NullLib.CommandLine
         }
         private bool TryExecuteCommandHost(string cmdname, IArgument[] args, StringComparison stringComparison, out object result)
         {
-            for (int i = 0, iend = commandHostAttributes.Length; i < iend; i++)
+            for (int i = 0, iend = commandHostAttrs.Length; i < iend; i++)
             {
-                CommandHostAttribute hostattr = commandHostAttributes[i];
+                CommandHostAttribute hostattr = commandHostAttrs[i];
                 if (hostattr.IsCorrectName(cmdname, stringComparison))
                 {
                     if (commandHosts[i].GetValue(instance) is CommandObject host)
@@ -326,23 +330,79 @@ namespace NullLib.CommandLine
             return TryExecuteCommand(CommandParser.DefaultParsers, cmdline, false, out result);
         }
 
-
-        private string GenCommandDefinition(IArgumentParser parser, int index, out string cmdName, out string[] args)
+        public IEnumerable<IEnumerable<string>> GenCommandDetails(string cmdname, StringComparison stringComparison)
         {
-            cmdName = methods[index].Name;
-            string[] defaultValues = cmdAttrs[index].ConvertArguObjects(paramAttrs[index].Select(v => v.DefaultValue)).ToArray();
-            args = paramAttrs[index].Select((v, i) => parser.FormatArgu(v.CommandArguName, defaultValues[i])).ToArray();
-            return $"{cmdName} {string.Join(" ", args)}";
+            int cmdCount = cmdAttrs.Length;
+            int hostCount = commandHostAttrs.Length;
+
+            for (int i = 0; i < hostCount; i++)
+            {
+                if (commandHosts[i].GetValue(instance) is CommandObject cmdobj)
+                {
+                    CommandHostAttribute _hostAttr = commandHostAttrs[i];
+                    if (_hostAttr.IsCorrectName(cmdname, stringComparison))
+                    {
+                        foreach (var def in cmdobj.GenCommandOverview())
+                        {
+                            yield return _hostAttr.CommandName.InitEnum().Concat(":".InitEnum());
+                            yield return _hostAttr.GetDifinitionString().InitEnum().Concat(def);
+                        }
+                        yield break;
+                    }
+                }
+            }
+
+            for (int i = 0; i < cmdCount; i++)
+            {
+                CommandAttribute _cmdAttr = cmdAttrs[i];
+                CommandArguAttribute[] _paramInfos = paramAttrs[i];
+
+                if (_cmdAttr.IsCorrectName(cmdname, stringComparison))
+                {
+                    yield return new string[] { _cmdAttr.GetDifinitionString() }.Concat(_paramInfos.Select(v => v.GetDifinitionString()));
+                    if (!string.IsNullOrWhiteSpace(_cmdAttr.Description))
+                        yield return new string[] { "  -", _cmdAttr.Description };
+                    foreach (var _paramInfo in _paramInfos)
+                        if (!string.IsNullOrWhiteSpace(_paramInfo.Description))
+                            yield return new string[] { "    -" }.Concat(new string[] { _paramInfo.CommandArguName, ":",  _paramInfo.Description });
+                    yield break;
+                }
+            }
         }
-        //protected bool GenMethodOverviewInfo(string name, StringComparison stringComparison, out string result)
-        //{
-        //    for (int i = 0, end = methods.Length; i < end; i++)
-        //    {
-        //        if (methods[i].Name.Equals(name, stringComparison))
-        //        {
-        //        }
-        //    }
-        //}
+        public string GenCommandDetailsText(string cmdname, StringComparison stringComparison)
+        {
+            return string.Join("\n", GenCommandDetails(cmdname, stringComparison).Select(v => string.Join(" ", v)));
+        }
+        public IEnumerable<IEnumerable<string>> GenCommandOverview()
+        {
+            int cmdCount = cmdAttrs.Length;
+            int hostCount = commandHostAttrs.Length;
+
+            for (int i = 0; i < hostCount; i++)
+            {
+                if (commandHosts[i].GetValue(instance) is CommandObject cmdobj)
+                {
+                    CommandHostAttribute _hostAttr = commandHostAttrs[i];
+
+                    foreach (var def in cmdobj.GenCommandOverview())
+                    {
+                        yield return Enumerable.Repeat(_hostAttr.GetDifinitionString(), 1).Concat(def);
+                    }
+                }
+            }
+
+            for (int i = 0; i < cmdCount; i++)
+            {
+                CommandAttribute _cmdAttr = cmdAttrs[i];
+                CommandArguAttribute[] _paramInfos = paramAttrs[i];
+
+                yield return Enumerable.Repeat(_cmdAttr.GetDifinitionString(), 1).Concat(_paramInfos.Select(v => v.GetDifinitionString()));
+            }
+        }
+        public string GenCommandOverviewText()
+        {
+            return string.Join("\n", GenCommandOverview().Select(v => string.Join(" ", v)));
+        }
     }
     /// <summary>
     /// CommandObject is used for calling method by command line.

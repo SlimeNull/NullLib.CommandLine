@@ -6,7 +6,7 @@ namespace TestConsole
 {
     partial class Program
     {
-        partial class MyCommands
+        partial class MyCommands : NCommand
         {
             public class MathCommands
             {
@@ -65,8 +65,10 @@ namespace TestConsole
                 EQ, NE, GT, LT, GE, LE, ET
             }
 
-            [Command(typeof(ForeachArguConverter<FloatArguConverter>))]   // each string of array will be converted by FloatConverter
-            public float Sum(params float[] nums)                 // variable length parameter method is supported
+            [Command(typeof(ForeachArguConverter<FloatArguConverter>), Description = "计算指定数字的总和")]   // each string of array will be converted by FloatConverter
+            public float Sum(
+                [CommandArgu("要计算的数字")]
+                params float[] nums)                 // variable length parameter method is supported
             {
                 float result = 0;
                 foreach (var i in nums)
@@ -91,6 +93,14 @@ namespace TestConsole
                 Console.BackgroundColor = color;
             }
 
+            [Command]
+            public void Help(string cmdname)
+            {
+                if (cmdname is null)
+                    Console.WriteLine(this.CommandObject.GenCommandOverviewText());
+                else
+                    Console.WriteLine(CommandObject.GenCommandDetailsText(cmdname, StringComparison.OrdinalIgnoreCase));
+            }
 
             void IfToDo(bool ok)
             {

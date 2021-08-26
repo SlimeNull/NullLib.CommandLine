@@ -38,8 +38,8 @@ namespace NullLib.CommandLine
         /// </summary>
         /// <param name="name">Param name</param>
         /// <param name="defaultValue">Param default value</param>
-        /// <returns>Formated document string</returns>
-        string FormatArgu(string name, string defaultValue);
+        ///// <returns>Formated document string</returns>
+        //string FormatArgu(string name, string defaultValue);
     }
     /// <summary>
     /// Commandline segment splited by CommandParser

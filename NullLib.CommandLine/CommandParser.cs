@@ -140,12 +140,17 @@ namespace NullLib.CommandLine
 
         public static void SplitCommandInfo(IArgument[] cmdline, out string cmdname, out IArgument[] arguments)
         {
-            if (cmdline.Length < 1)
-                throw new ArgumentOutOfRangeException(nameof(cmdline), "Length must be greater than 0");
-
-            cmdname = cmdline[0].Content;
-            arguments = new IArgument[cmdline.Length - 1];
-            Array.Copy(cmdline, 1, arguments, 0, arguments.Length);
+            if (cmdline.Length > 0)
+            {
+                cmdname = cmdline[0].Content;
+                arguments = new IArgument[cmdline.Length - 1];
+                Array.Copy(cmdline, 1, arguments, 0, arguments.Length);
+            }
+            else
+            {
+                cmdname = "";
+                arguments = new IArgument[0];
+            }
         }
 
         public static IArgument[] ParseArguments(IList<IArgumentParser> parsers, CommandSegment[] arguments)
@@ -179,10 +184,10 @@ namespace NullLib.CommandLine
             return true;
         }
 
-        public string FormatArgu(string name, string defaultValue)
-        {
-            return defaultValue == null ? $"<{name}>" : $"[{name}({defaultValue})]";
-        }
+        //public string FormatArgu(string name, string defaultValue)
+        //{
+        //    return defaultValue == null ? $"<{name}>" : $"[{name}({defaultValue})]";
+        //}
     }
     public class IdentifierArguParser : IArgumentParser
     {
@@ -217,10 +222,10 @@ namespace NullLib.CommandLine
             return true;
         }
 
-        public string FormatArgu(string name, string defaultValue)
-        {
-            return defaultValue == null ? $"<{name}>" : $"[{name}({defaultValue})]";
-        }
+        //public string FormatArgu(string name, string defaultValue)
+        //{
+        //    return defaultValue == null ? $"<{name}>" : $"[{name}({defaultValue})]";
+        //}
     }
     public class StringArguParser : IArgumentParser
     {
@@ -240,19 +245,22 @@ namespace NullLib.CommandLine
             }
         }
 
-        public string FormatArgu(string name, string defaultValue)
-        {
-            return defaultValue == null ? $"<{name}>" : $"[{name}({defaultValue})]";
-        }
+        //public string FormatArgu(string name, string defaultValue)
+        //{
+        //    return defaultValue == null ? $"<{name}>" : $"[{name}({defaultValue})]";
+        //}
     }
     public class FieldArguParser : IArgumentParser
     {
         private char separator;
 
+        /// <summary>
+        /// Field argument seperator, default is ':'
+        /// </summary>
         public char Separator { get => separator; set => separator = value; }
         public FieldArguParser()
         {
-            Separator = '=';
+            Separator = ':';
         }
         public FieldArguParser(char triggerChar)
         {
@@ -265,7 +273,7 @@ namespace NullLib.CommandLine
             if(index < arguments.Length)
             {
                 CommandSegment name = arguments[index];
-                int eqindex = name.Content.IndexOf(separator);   // the index of symbol 'equals': '='
+                int eqindex = name.Content.IndexOf(separator);   // the index of symbol 'equals': ':'
                 if((!name.Quoted) && eqindex > 0)
                 {
                     if(eqindex + 1 < name.Content.Length)
@@ -291,10 +299,10 @@ namespace NullLib.CommandLine
             return false;
         }
 
-        public string FormatArgu(string name, string defaultValue)
-        {
-            return defaultValue == null ? $"<{name}{separator}value>" : $"[{name}{separator}value({defaultValue})]";
-        }
+        //public string FormatArgu(string name, string defaultValue)
+        //{
+        //    return defaultValue == null ? $"<{name}{separator}value>" : $"[{name}{separator}value({defaultValue})]";
+        //}
     }
     public class PropertyArguParser : IArgumentParser
     {
@@ -332,9 +340,9 @@ namespace NullLib.CommandLine
             return false;
         }
 
-        public string FormatArgu(string name, string defaultValue)
-        {
-            return defaultValue == null ? $"<{prefix}{name} value>" : $"[{prefix}{name} value({defaultValue})]";
-        }
+        //public string FormatArgu(string name, string defaultValue)
+        //{
+        //    return defaultValue == null ? $"<{prefix}{name} value>" : $"[{prefix}{name} value({defaultValue})]";
+        //}
     }
 }

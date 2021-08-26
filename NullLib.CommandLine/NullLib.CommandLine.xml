@@ -38,14 +38,6 @@
             <param name="result">Result Argument</param>
             <returns>If this parsing was successed</returns>
         </member>
-        <member name="M:NullLib.CommandLine.IArgumentParser.FormatArgu(System.String,System.String)">
-            <summary>
-            Format param name and param default value to a standard format of current parser
-            </summary>
-            <param name="name">Param name</param>
-            <param name="defaultValue">Param default value</param>
-            <returns>Formated document string</returns>
-        </member>
         <member name="T:NullLib.CommandLine.CommandSegment">
             <summary>
             Commandline segment splited by CommandParser
@@ -593,6 +585,21 @@
             <param name="segments">Source commandline segments</param>
             <param name="cmdname">Commandline name</param>
             <param name="arguments">Commandline arguments</param>
+        </member>
+        <member name="P:NullLib.CommandLine.FieldArguParser.Separator">
+            <summary>
+            Field argument seperator, default is ':'
+            </summary>
+        </member>
+        <member name="T:NullLib.CommandLine.NCommand">
+            <summary>
+            Basic command class for NullLib.CommandLine commands, provides basic functions for using
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.NCommand.CommandObject">
+            <summary>
+            Get the CommandObject which is controlling current instance
+            </summary>
         </member>
     </members>
 </doc>

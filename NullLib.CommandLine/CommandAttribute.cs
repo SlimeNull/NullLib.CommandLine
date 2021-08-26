@@ -63,6 +63,10 @@ namespace NullLib.CommandLine
         {
             return cmdName != null && (cmdName.Equals(CommandName, stringComparison) || cmdName.Equals(CommandAlias, stringComparison));
         }
+        public string GetDifinitionString(bool alias = false)
+        {
+            return alias ? CommandAlias : CommandName;
+        }
 
         public IEnumerable<string> ConvertArguObjects(IEnumerable<object> objs)
         {
@@ -101,7 +105,7 @@ namespace NullLib.CommandLine
         /// </summary>
         public CommandHostAttribute()
         {
-            
+
         }
 
         public void LoadTarget(PropertyInfo info)
@@ -119,6 +123,10 @@ namespace NullLib.CommandLine
         public bool IsCorrectName(string cmdName, StringComparison stringComparison)
         {
             return cmdName != null && (cmdName.Equals(commandName, stringComparison) || cmdName.Equals(commandAlias, stringComparison));
+        }
+        public string GetDifinitionString(bool alias = false)
+        {
+            return $"{(alias ? CommandAlias : CommandName)}";
         }
 
         /// <summary>
@@ -173,6 +181,11 @@ namespace NullLib.CommandLine
         public bool IsCorrectName(string arguName, StringComparison stringComparison)
         {
             return arguName != null && (arguName.Equals(cmdArguName, stringComparison) || arguName.Equals(cmdArguAlias));
+        }
+
+        public string GetDifinitionString(bool alias = false)
+        {
+            return $"{(IsParameterArray ? "*" : null)}{(alias ? CommandArguAlias : CommandArguName)}:{ParameterType.Name}";
         }
 
         public string CommandArguName { get => cmdArguName; set => cmdArguName = value; }
