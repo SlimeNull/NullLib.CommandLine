@@ -344,8 +344,8 @@ namespace NullLib.CommandLine
                     {
                         foreach (var def in cmdobj.GenCommandOverview())
                         {
-                            yield return _hostAttr.CommandName.InitEnum().Concat(":".InitEnum());
-                            yield return _hostAttr.GetDifinitionString().InitEnum().Concat(def);
+                            yield return new string[] { _hostAttr.CommandName, ":" };
+                            yield return new string[] { "  ",  _hostAttr.GetDifinitionString() }.Concat(def);
                         }
                         yield break;
                     }
