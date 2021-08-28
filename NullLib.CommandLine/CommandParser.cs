@@ -5,6 +5,27 @@ using System.Text;
 namespace NullLib.CommandLine
 {
     /// <summary>
+    /// Provide method for parsing commandline segments
+    /// </summary>
+    public interface IArguParser
+    {
+        /// <summary>
+        /// Try to parse an Argument from commandline segments
+        /// </summary>
+        /// <param name="index">Current index</param>
+        /// <param name="segments">Source segments</param>
+        /// <param name="result">Result Argument</param>
+        /// <returns>If this parsing was successed</returns>
+        bool TryParse(ref int index, ref CommandSegment[] segments, out IArgument result);
+        /// <summary>
+        /// Format param name and param default value to a standard format of current parser
+        /// </summary>
+        /// <param name="name">Param name</param>
+        /// <param name="defaultValue">Param default value</param>
+        ///// <returns>Formated document string</returns>
+        //string FormatArgu(string name, string defaultValue);
+    }
+    /// <summary>
     /// Provide methods for parsing command
     /// </summary>
     public static class CommandParser
@@ -18,7 +39,7 @@ namespace NullLib.CommandLine
         /// <summary>
         /// Default parsers for parse commandline string.
         /// </summary>
-        public static IArgumentParser[] DefaultParsers { get; private set; } = new IArgumentParser[]
+        public static IArguParser[] DefaultParsers { get; private set; } = new IArguParser[]
         {
             new FieldArguParser(),
             new ArguParser()
@@ -153,13 +174,13 @@ namespace NullLib.CommandLine
             }
         }
 
-        public static IArgument[] ParseArguments(IList<IArgumentParser> parsers, CommandSegment[] arguments)
+        public static IArgument[] ParseArguments(IList<IArguParser> parsers, CommandSegment[] arguments)
         {
             List<IArgument> result = new();
             for (int i = 0, iend = arguments.Length; i < iend;)
             {
                 IArgument argu = null;
-                foreach (IArgumentParser parser in parsers)
+                foreach (IArguParser parser in parsers)
                     if (parser.TryParse(ref i, ref arguments, out argu))
                         break;
 
@@ -176,7 +197,7 @@ namespace NullLib.CommandLine
             return ParseArguments(DefaultParsers, arguments);
         }
     }
-    public class ArguParser : IArgumentParser
+    public class ArguParser : IArguParser
     {
         public bool TryParse(ref int index, ref CommandSegment[] arguments, out IArgument result)
         {
@@ -189,7 +210,7 @@ namespace NullLib.CommandLine
         //    return defaultValue == null ? $"<{name}>" : $"[{name}({defaultValue})]";
         //}
     }
-    public class IdentifierArguParser : IArgumentParser
+    public class IdentifierArguParser : IArguParser
     {
         public bool IsIdentifier(string str)
         {
@@ -227,7 +248,7 @@ namespace NullLib.CommandLine
         //    return defaultValue == null ? $"<{name}>" : $"[{name}({defaultValue})]";
         //}
     }
-    public class StringArguParser : IArgumentParser
+    public class StringArguParser : IArguParser
     {
         public bool TryParse(ref int index, ref CommandSegment[] arguments, out IArgument result)
         {
@@ -250,7 +271,7 @@ namespace NullLib.CommandLine
         //    return defaultValue == null ? $"<{name}>" : $"[{name}({defaultValue})]";
         //}
     }
-    public class FieldArguParser : IArgumentParser
+    public class FieldArguParser : IArguParser
     {
         private char separator;
 
@@ -304,7 +325,7 @@ namespace NullLib.CommandLine
         //    return defaultValue == null ? $"<{name}{separator}value>" : $"[{name}{separator}value({defaultValue})]";
         //}
     }
-    public class PropertyArguParser : IArgumentParser
+    public class PropertyArguParser : IArguParser
     {
         private string prefix;
 

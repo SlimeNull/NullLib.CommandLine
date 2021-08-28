@@ -29,6 +29,10 @@ namespace NullLib.CommandLine
         /// Type of TargetInstance
         /// </summary>
         public Type IntanceType => instanceType;
+
+        /// <summary>
+        /// When calling ExecuteCommand(...), if cannot find entry point method for command, CommandUnresolved will be triggered
+        /// </summary>
         public event EventHandler<CommandUnResolvedEventArgs> CommandUnresolved;
 
         private void InitializeInstance()
@@ -101,7 +105,7 @@ namespace NullLib.CommandLine
                     {
                         CommandParser.SplitCommandInfo(args, out var _cmdname, out var _args);
 
-                        if (CommandInvoker.CanInvoke(host.cmdAttrs, host.paramAttrs, _cmdname, _args, stringComparison))
+                        if (host.CanExecuteCommand(_cmdname, _args, stringComparison))
                             return true;
                     }
                 }
@@ -120,7 +124,7 @@ namespace NullLib.CommandLine
                     {
                         CommandParser.SplitCommandInfo(args, out var _cmdname, out var _args);
 
-                        if (CommandInvoker.TryInvoke(host.methods, host.cmdAttrs, host.paramAttrs, host.instance, _cmdname, _args, stringComparison, out result))
+                        if (host.TryExecuteCommand(_cmdname, _args, stringComparison, out result))
                             return true;
                     }
                 }
@@ -129,45 +133,74 @@ namespace NullLib.CommandLine
             result = null;
             return false;
         }
-        internal object InnerExecuteCommand(IArgumentParser[] parsers, string cmdlinestr, CommandSegment[] cmdline, bool ignoreCases)
+        internal object ExecuteCommand(string cmdname, IArgument[] args, StringComparison stringComparison,
+            string cmdlinestr = null, CommandSegment[] cmdlineSegments = null, CommandSegment[] argsSegments = null)
         {
-            CommandParser.SplitCommandInfo(cmdline, out var cmdname, out var argsSegments);
-            IArgument[] args = CommandParser.ParseArguments(parsers, argsSegments);
-            StringComparison stringComparison = ignoreCases.GetStringComparison();
             object result;
-
             if (TryExecuteCommandHost(cmdname, args, stringComparison, out result))
                 return result;
-
             if (CommandInvoker.TryInvoke(methods, cmdAttrs, paramAttrs, instance, cmdname, args, stringComparison, out result))
                 return result;
 
-            CommandUnResolvedEventArgs eArgs = new CommandUnResolvedEventArgs(cmdlinestr, cmdline, args, cmdname, argsSegments);
+            CommandUnResolvedEventArgs eArgs = new CommandUnResolvedEventArgs(cmdlinestr, cmdlineSegments, args, cmdname, argsSegments);
             OnCommandUnresolved(eArgs);
             if (!eArgs.Handled)
                 throw new CommandEntryPointNotFoundException(cmdname);
             return null;
         }
-        public object ExecuteCommand(IArgumentParser[] parsers, CommandSegment[] cmdline, bool ignoreCases)
+        private object ExecuteCommand(IArguParser[] parsers, string cmdlinestr, CommandSegment[] cmdline, bool ignoreCases)
         {
-            return InnerExecuteCommand(parsers, null, cmdline, ignoreCases);
+            CommandParser.SplitCommandInfo(cmdline, out var cmdname, out var argsSegments);
+            IArgument[] args = CommandParser.ParseArguments(parsers, argsSegments);
+            StringComparison stringComparison = ignoreCases.GetStringComparison();
+
+            return ExecuteCommand(cmdname, args, stringComparison, cmdlinestr, cmdline, argsSegments);
         }
-        public object ExecuteCommand(IArgumentParser[] parsers, CommandSegment[] cmdline)
+
+        /// <summary>
+        /// Execute command by specified parsers, commandline segments
+        /// </summary>
+        /// <param name="parsers"></param>
+        /// <param name="cmdlineSegs"></param>
+        /// <param name="ignoreCases">Ignore cases or not</param>
+        /// <returns></returns>
+        public object ExecuteCommand(IArguParser[] parsers, CommandSegment[] cmdlineSegs, bool ignoreCases)
         {
-            return ExecuteCommand(parsers, cmdline, false);
+            CommandParser.SplitCommandInfo(cmdlineSegs, out var cmdname, out var argsSegments);
+            IArgument[] args = CommandParser.ParseArguments(parsers, argsSegments);
+            StringComparison stringComparison = ignoreCases.GetStringComparison();
+            return ExecuteCommand(cmdname, args, stringComparison,
+                null, cmdlineSegs, argsSegments);
         }
-        public object ExecuteCommand(IArgumentParser[] parsers, string cmdline, bool ignoreCases)
+        /// <summary>
+        /// Execute command by specified parsers, commandline segments, not ignore cases
+        /// </summary>
+        /// <param name="parsers"></param>
+        /// <param name="cmdlineSegs"></param>
+        /// <returns></returns>
+        public object ExecuteCommand(IArguParser[] parsers, CommandSegment[] cmdlineSegs)
+        {
+            return ExecuteCommand(parsers, cmdlineSegs, false);
+        }
+        /// <summary>
+        /// Execute command by specified parsers, commandline string
+        /// </summary>
+        /// <param name="parsers"></param>
+        /// <param name="cmdline"></param>
+        /// <param name="ignoreCases">Ignore cases or not</param>
+        /// <returns></returns>
+        public object ExecuteCommand(IArguParser[] parsers, string cmdline, bool ignoreCases)
         {
             CommandParser.SplitCommandLine(cmdline, out var cmdSegs);
-            return InnerExecuteCommand(parsers, cmdline, cmdSegs, ignoreCases);
+            return ExecuteCommand(parsers, cmdline, cmdSegs, ignoreCases);
         }
-        public object ExecuteCommand(IArgumentParser[] parsers, string cmdline)
+        public object ExecuteCommand(IArguParser[] parsers, string cmdline)
         {
             return ExecuteCommand(parsers, cmdline, false);
         }
         public object ExecuteCommand(CommandSegment[] cmdline, bool ignoreCases)
         {
-            return InnerExecuteCommand(CommandParser.DefaultParsers, null, cmdline, ignoreCases);
+            return ExecuteCommand(CommandParser.DefaultParsers, null, cmdline, ignoreCases);
         }
         public object ExecuteCommand(CommandSegment[] cmdline)
         {
@@ -187,33 +220,36 @@ namespace NullLib.CommandLine
             return ExecuteCommand(CommandParser.DefaultParsers, cmdline, false);
         }
 
-        /// <summary>
-        /// Check if specified cmdline can be executed
-        /// </summary>
-        /// <param name="parsers"></param>
-        /// <param name="cmdline"></param>
-        /// <param name="ignoreCases"></param>
-        /// <returns></returns>
-        public bool CanExecuteCommand(IArgumentParser[] parsers, CommandSegment[] cmdline, bool ignoreCases)
+        internal bool CanExecuteCommand(string cmdname, IArgument[] args, StringComparison stringComparison)
         {
-            CommandParser.SplitCommandInfo(cmdline, out var cmdname, out var cmdparams);
-            var args = CommandParser.ParseArguments(parsers, cmdparams);
-
-            StringComparison stringComparison = ignoreCases.GetStringComparison();
             if (CanExecuteCommandHost(cmdname, args, stringComparison))
                 return true;
-
             return CommandInvoker.CanInvoke(cmdAttrs, paramAttrs, cmdname, args, stringComparison);
         }
         /// <summary>
         /// Check if specified cmdline can be executed
         /// </summary>
         /// <param name="parsers"></param>
-        /// <param name="cmdline"></param>
+        /// <param name="cmdlineSegs"></param>
+        /// <param name="ignoreCases"></param>
         /// <returns></returns>
-        public bool CanExecuteCommand(IArgumentParser[] parsers, CommandSegment[] cmdline)
+        public bool CanExecuteCommand(IArguParser[] parsers, CommandSegment[] cmdlineSegs, bool ignoreCases)
         {
-            return CanExecuteCommand(parsers, cmdline, false);
+            CommandParser.SplitCommandInfo(cmdlineSegs, out var cmdname, out var cmdparams);
+            var args = CommandParser.ParseArguments(parsers, cmdparams);
+            StringComparison stringComparison = ignoreCases.GetStringComparison();
+
+            return CanExecuteCommand(cmdname, args, stringComparison);
+        }
+        /// <summary>
+        /// Check if specified cmdline can be executed
+        /// </summary>
+        /// <param name="parsers"></param>
+        /// <param name="cmdlineSegs"></param>
+        /// <returns></returns>
+        public bool CanExecuteCommand(IArguParser[] parsers, CommandSegment[] cmdlineSegs)
+        {
+            return CanExecuteCommand(parsers, cmdlineSegs, false);
         }
         /// <summary>
         /// Check if specified cmdline can be executed
@@ -222,7 +258,7 @@ namespace NullLib.CommandLine
         /// <param name="cmdline"></param>
         /// <param name="ignoreCases"></param>
         /// <returns></returns>
-        public bool CanExecuteCommand(IArgumentParser[] parsers, string cmdline, bool ignoreCases)
+        public bool CanExecuteCommand(IArguParser[] parsers, string cmdline, bool ignoreCases)
         {
             CommandParser.SplitCommandLine(cmdline, out var cmdlineSegs);
             return CanExecuteCommand(parsers, cmdlineSegs, ignoreCases);
@@ -233,7 +269,7 @@ namespace NullLib.CommandLine
         /// <param name="parsers"></param>
         /// <param name="cmdline"></param>
         /// <returns></returns>
-        public bool CanExecuteCommand(IArgumentParser[] parsers, string cmdline)
+        public bool CanExecuteCommand(IArguParser[] parsers, string cmdline)
         {
             CommandParser.SplitCommandLine(cmdline, out var cmdlineSegs);
             return CanExecuteCommand(parsers, cmdlineSegs, false);
@@ -241,21 +277,21 @@ namespace NullLib.CommandLine
         /// <summary>
         /// Check if specified cmdline can be executed
         /// </summary>
-        /// <param name="cmdline"></param>
+        /// <param name="cmdlineSegs"></param>
         /// <param name="ignoreCases"></param>
         /// <returns></returns>
-        public bool CanExecuteCommand(CommandSegment[] cmdline, bool ignoreCases)
+        public bool CanExecuteCommand(CommandSegment[] cmdlineSegs, bool ignoreCases)
         {
-            return CanExecuteCommand(CommandParser.DefaultParsers, cmdline, ignoreCases);
+            return CanExecuteCommand(CommandParser.DefaultParsers, cmdlineSegs, ignoreCases);
         }
         /// <summary>
         /// Check if specified cmdline can be executed
         /// </summary>
-        /// <param name="cmdline"></param>
+        /// <param name="cmdlineSegs"></param>
         /// <returns></returns>
-        public bool CanExecuteCommand(CommandSegment[] cmdline)
+        public bool CanExecuteCommand(CommandSegment[] cmdlineSegs)
         {
-            return CanExecuteCommand(CommandParser.DefaultParsers, cmdline, false);
+            return CanExecuteCommand(CommandParser.DefaultParsers, cmdlineSegs, false);
         }
         /// <summary>
         /// Check if specified cmdline can be executed
@@ -277,6 +313,12 @@ namespace NullLib.CommandLine
             return CanExecuteCommand(CommandParser.DefaultParsers, cmdline, false);
         }
 
+        internal bool TryExecuteCommand(string cmdname, IArgument[] args, StringComparison stringComparison, out object result)
+        {
+            if (TryExecuteCommandHost(cmdname, args, stringComparison, out result))
+                return true;
+            return CommandInvoker.TryInvoke(methods, cmdAttrs, paramAttrs, instance, cmdname, args, stringComparison, out result);
+        }
         /// <summary>
         /// Try to execute specified cmdline
         /// </summary>
@@ -289,27 +331,24 @@ namespace NullLib.CommandLine
         /// <exception cref="CommandParameterConvertException">Cannot convert cmdline argument to required parameter type</exception>
         /// <exception cref="TargetInvocationException"></exception>
         /// <returns></returns>
-        public bool TryExecuteCommand(IArgumentParser[] parsers, CommandSegment[] cmdline, bool ignoreCases, out object result)
+        public bool TryExecuteCommand(IArguParser[] parsers, CommandSegment[] cmdline, bool ignoreCases, out object result)
         {
             CommandParser.SplitCommandInfo(cmdline, out var cmdname, out var arguments);
             IArgument[] args = CommandParser.ParseArguments(parsers, arguments);
             StringComparison stringComparison = ignoreCases.GetStringComparison();
 
-            if (TryExecuteCommandHost(cmdname, args, stringComparison, out result))
-                return true;
-
-            return CommandInvoker.TryInvoke(methods, cmdAttrs, paramAttrs, instance, cmdname, args, stringComparison, out result);
+            return TryExecuteCommand(cmdname, args, stringComparison, out result);
         }
-        public bool TryExecuteCommand(IArgumentParser[] parsers, CommandSegment[] cmdline, out object result)
+        public bool TryExecuteCommand(IArguParser[] parsers, CommandSegment[] cmdline, out object result)
         {
             return TryExecuteCommand(parsers, cmdline, false, out result);
         }
-        public bool TryExecuteCommand(IArgumentParser[] parsers, string cmdline, bool ignoreCases, out object result)
+        public bool TryExecuteCommand(IArguParser[] parsers, string cmdline, bool ignoreCases, out object result)
         {
             CommandParser.SplitCommandLine(cmdline, out var cmdinfo);
             return TryExecuteCommand(parsers, cmdinfo, ignoreCases, out result);
         }
-        public bool TryExecuteCommand(IArgumentParser[] parsers, string cmdline, out object result)
+        public bool TryExecuteCommand(IArguParser[] parsers, string cmdline, out object result)
         {
             return TryExecuteCommand(parsers, cmdline, false, out result);
         }
@@ -345,7 +384,7 @@ namespace NullLib.CommandLine
                         foreach (var def in cmdobj.GenCommandOverview())
                         {
                             yield return new string[] { _hostAttr.CommandName, ":" };
-                            yield return new string[] { "  ",  _hostAttr.GetDifinitionString() }.Concat(def);
+                            yield return new string[] { "  ", _hostAttr.GetDifinitionString() }.Concat(def);
                         }
                         yield break;
                     }
@@ -364,7 +403,7 @@ namespace NullLib.CommandLine
                         yield return new string[] { "  -", _cmdAttr.Description };
                     foreach (var _paramInfo in _paramInfos)
                         if (!string.IsNullOrWhiteSpace(_paramInfo.Description))
-                            yield return new string[] { "    -" }.Concat(new string[] { _paramInfo.CommandArguName, ":",  _paramInfo.Description });
+                            yield return new string[] { "    -" }.Concat(new string[] { _paramInfo.CommandArguName, ":", _paramInfo.Description });
                     yield break;
                 }
             }
@@ -436,15 +475,38 @@ namespace NullLib.CommandLine
         private static Type cmdObjType = typeof(CommandObject);
         private static readonly Dictionary<Type, CommandObjectInfo> cmdObjInfos = new();
 
+        /// <summary>
+        /// Get types whose CommandObject info was intialized
+        /// </summary>
         public static IEnumerable<Type> Keys => cmdObjInfos.Keys;
+        /// <summary>
+        /// Check if CommandObject info is exist by specified type
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public static bool HasInfo(Type type)
         {
             return cmdObjInfos.ContainsKey(type);
         }
+        /// <summary>
+        /// Remove existed CommandObject info by specified type
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public static bool RemoveInfo(Type type)
         {
             return cmdObjInfos.Remove(type);
         }
+        /// <summary>
+        /// Get from initialized CommandObject info or intialize new one when info not found
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="methods"></param>
+        /// <param name="paramInfos"></param>
+        /// <param name="commandHosts"></param>
+        /// <param name="methodAttributes"></param>
+        /// <param name="paramAttributes"></param>
+        /// <param name="commandHostAttributes"></param>
         public static void GetCommandObjectInfo(Type type,
             out MethodInfo[] methods, out ParameterInfo[][] paramInfos, out PropertyInfo[] commandHosts,
             out CommandAttribute[] methodAttributes, out CommandArguAttribute[][] paramAttributes, out CommandHostAttribute[] commandHostAttributes)
@@ -464,6 +526,16 @@ namespace NullLib.CommandLine
                 cmdObjInfos[type] = new CommandObjectInfo(methods, paramInfos, commandHosts, methodAttributes, paramAttributes, commandHostAttributes);
             }
         }
+        /// <summary>
+        /// Initialize new CommandObject info for specified type
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="methods"></param>
+        /// <param name="paramInfos"></param>
+        /// <param name="commandHosts"></param>
+        /// <param name="methodAttributes"></param>
+        /// <param name="paramAttributes"></param>
+        /// <param name="commandHostAttributes"></param>
         public static void NewCommandObjectInfo(Type type,
             out MethodInfo[] methods, out ParameterInfo[][] paramInfos, out PropertyInfo[] commandHosts,
             out CommandAttribute[] methodAttributes, out CommandArguAttribute[][] paramAttributes, out CommandHostAttribute[] commandHostAttributes)

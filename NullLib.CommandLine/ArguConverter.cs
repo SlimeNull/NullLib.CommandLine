@@ -10,7 +10,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Provide methods to convert string or string[] to required parameter type
     /// </summary>
-    public interface IArgumentConverter
+    public interface IArguConverter
     {
         /// <summary>
         /// TargetType of this converter
@@ -66,7 +66,7 @@ namespace NullLib.CommandLine
     /// Provide methods to convert string or string[] to <typeparamref name="TResult"/>
     /// </summary>
     /// <typeparam name="TResult"></typeparam>
-    public interface IArgumentConverter<TResult> : IArgumentConverter
+    public interface IArguConverter<TResult> : IArguConverter
     {
         /// <summary>
         /// Convert from a string
@@ -114,18 +114,18 @@ namespace NullLib.CommandLine
     /// </summary>
     public static class ArguConverterManager
     {
-        private static readonly Type IArgumentConverterType = typeof(IArgumentConverter);
+        private static readonly Type IArgumentConverterType = typeof(IArguConverter);
         /// <summary>
         /// Global converter storage
         /// </summary>
-        public static Dictionary<Type, IArgumentConverter> AllConverters { get; } = new Dictionary<Type, IArgumentConverter>();
+        public static Dictionary<Type, IArguConverter> AllConverters { get; } = new Dictionary<Type, IArguConverter>();
 
         /// <summary>
         /// Get from global storage or initialize a converter
         /// </summary>
         /// <typeparam name="T">Converter type</typeparam>
         /// <returns>Result converter</returns>
-        public static IArgumentConverter GetConverter<T>() where T : IArgumentConverter
+        public static IArguConverter GetConverter<T>() where T : IArguConverter
         {
             Type type = typeof(T);
             return AllConverters.TryGetValue(type, out var result) ? result : AllConverters[type] = Activator.CreateInstance<T>();
@@ -135,7 +135,7 @@ namespace NullLib.CommandLine
         /// </summary>
         /// <param name="type">Converter type</param>
         /// <returns>Result converter</returns>
-        public static IArgumentConverter GetConverter(Type type)
+        public static IArguConverter GetConverter(Type type)
         {
             if (type == null)
                 return null;
@@ -147,9 +147,9 @@ namespace NullLib.CommandLine
             else
             {
                 if (IArgumentConverterType.IsAssignableFrom(type))
-                    return AllConverters[type] = Activator.CreateInstance(type) as IArgumentConverter;
+                    return AllConverters[type] = Activator.CreateInstance(type) as IArguConverter;
                 else
-                    throw new ArgumentOutOfRangeException(nameof(type), $"Type must be assignable to {nameof(IArgumentConverter)}.");
+                    throw new ArgumentOutOfRangeException(nameof(type), $"Type must be assignable to {nameof(IArguConverter)}.");
             }
         }
     }
@@ -157,7 +157,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Base class of ArgumentConverter
     /// </summary>
-    public abstract class ArguConverterBase : IArgumentConverter
+    public abstract class ArguConverterBase : IArguConverter
     {
         private readonly Type targetType = typeof(string);
         /// <summary>
@@ -220,7 +220,7 @@ namespace NullLib.CommandLine
     /// Base class of ArgumentConverter
     /// </summary>
     /// <typeparam name="TTarget"></typeparam>
-    public abstract class ArguConverterBase<TTarget> : IArgumentConverter<TTarget>
+    public abstract class ArguConverterBase<TTarget> : IArguConverter<TTarget>
     {
         private static readonly Type targetType = typeof(TTarget);
         public Type TargetType { get => targetType; }
@@ -298,11 +298,11 @@ namespace NullLib.CommandLine
                 return TryConvertBack(default, out result);
         }
 
-        object IArgumentConverter.Convert(string argu)
+        object IArguConverter.Convert(string argu)
         {
             return Convert(argu);
         }
-        object IArgumentConverter.Convert(object argu)
+        object IArguConverter.Convert(object argu)
         {
             return Convert(argu);
         }
@@ -499,11 +499,11 @@ namespace NullLib.CommandLine
     /// Convert from string[], use <typeparamref name="TConverter"/> to convert each element, only use in "params" parameter
     /// </summary>
     /// <typeparam name="TConverter">Converter to use</typeparam>
-    public class ForeachArguConverter<TConverter> : ArguConverterBase where TConverter : IArgumentConverter
+    public class ForeachArguConverter<TConverter> : ArguConverterBase where TConverter : IArguConverter
     {
         public override Type TargetType => targetType;
 
-        readonly IArgumentConverter converter;
+        readonly IArguConverter converter;
         private readonly Type targetType;
 
         public ForeachArguConverter()

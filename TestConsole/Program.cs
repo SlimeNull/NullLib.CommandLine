@@ -18,7 +18,7 @@ namespace TestConsole
         static void Main(string[] args)
         {
             CommandObject<MyCommands> obj = new();       // 创建一个命令行对象
-            IArgumentParser[] parsers = new IArgumentParser[]
+            IArguParser[] parsers = new IArguParser[]
             {
                 new PropertyArguParser("-"),
                 new FieldArguParser(':'),

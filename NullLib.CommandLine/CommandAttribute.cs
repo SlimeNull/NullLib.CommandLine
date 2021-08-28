@@ -14,12 +14,12 @@ namespace NullLib.CommandLine
     [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
     public sealed class CommandAttribute : Attribute
     {
-        readonly IArgumentConverter[] arguConverters;
+        readonly IArguConverter[] arguConverters;
 
         /// <summary>
         /// ArgumentConverters for current command
         /// </summary>
-        public IArgumentConverter[] ArgumentConverters { get => arguConverters; }
+        public IArguConverter[] ArgumentConverters { get => arguConverters; }
 
         /// <summary>
         /// Initialize a new instance of CommandAttribute with no special IArgumentConverter
@@ -27,7 +27,7 @@ namespace NullLib.CommandLine
         /// </summary>
         public CommandAttribute()
         {
-            arguConverters = new IArgumentConverter[0];
+            arguConverters = new IArguConverter[0];
         }
         /// <summary>
         /// Initialize a new instance of CommandAttribute
@@ -37,13 +37,13 @@ namespace NullLib.CommandLine
         {
             try
             {
-                this.arguConverters = new IArgumentConverter[arguConverters.Length];
+                this.arguConverters = new IArguConverter[arguConverters.Length];
                 for (int i = 0, end = arguConverters.Length; i < end; i++)
                     this.arguConverters[i] = ArguConverterManager.GetConverter(arguConverters[i]);
             }
             catch (ArgumentOutOfRangeException)
             {
-                throw new ArgumentOutOfRangeException(nameof(arguConverters), $"Type must be assignable to {nameof(IArgumentConverter)}.");
+                throw new ArgumentOutOfRangeException(nameof(arguConverters), $"Type must be assignable to {nameof(IArguConverter)}.");
             }
         }
 
@@ -70,7 +70,7 @@ namespace NullLib.CommandLine
 
         public IEnumerable<string> ConvertArguObjects(IEnumerable<object> objs)
         {
-            IArgumentConverter curConvtr = ArguConverterManager.GetConverter<ArguConverter>();
+            IArguConverter curConvtr = ArguConverterManager.GetConverter<ArguConverter>();
             int converterCount = arguConverters.Length;
             return objs.Select((v, i) =>
             {

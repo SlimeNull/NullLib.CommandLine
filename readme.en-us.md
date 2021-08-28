@@ -59,12 +59,12 @@ Now input commands.
 Hello world!
 ```
 
-To pass parameters to method, specify `ArgumentConverter` for each parameter.
+To pass parameters to method, specify `ArguConverter` for each parameter.
 
 Let's add these methods to `AppCommands`
 
 ```csharp
-[Command(typeof(FloatArguConverter), typeof(FloatArguConverter))]      // the build-in ArgumentConverter in NullLib.CommandLine
+[Command(typeof(FloatArguConverter), typeof(FloatArguConverter))]      // the build-in ArguConverter in NullLib.CommandLine
 public float Plus(float a, float b)
 {
     return a + b;
@@ -92,7 +92,7 @@ public void Print(string txt)
 {
     Console.WriteLine(txt);
 }
-[Command]                                   // the defualt converter is 'ArgumentConverter', you can ignore these
+[Command]                                   // the defualt converter is 'ArguConverter', you can ignore these
 public bool StringEquals(string txt1, string txt2)   // or specify 'null' to use the last converter (here is ArguConverter)
 {
     return txt1.Equals(txt2);
@@ -128,6 +128,39 @@ False
 you can convert to a enum type by it's name or integer value
 ```
 
+Nested Commands:
+
+```csharp
+public class MyCommand
+{
+    [CommandHost]   // Add CommandHost Attribute for CommandObject Property member to use 'Nested Commands'
+    public CommandObject<MathCommand> Math { get; } = new();   // 实例化成员
+    
+    [Command]
+    public string Hello() => "Hello, world.";
+    
+    public class MathCommand
+    {
+        // implement Plus command in nested commands
+        [Command(typeof(DoubleArguConverter))]
+        public double Plus(double a, double b) => a + b;
+    }
+}
+
+/*
+    In codes above, we added a 'Nested Commands' command, and these commands will be supported:
+    Math Plus a:Double b:Double
+    Hello
+*/
+```
+
+Intergrated commands overview text generation:
+
+```csharp
+CommandObject<AppCommand> AppCommandObject = new();
+Console.WriteLine(AppCommandObject.GenCommandOverviewText());    // Show all available commands
+```
+
 
 
 ## Types
@@ -148,19 +181,19 @@ you can convert to a enum type by it's name or integer value
 
    Helps to parse a command string for method calling.
 
-5. ArgumentConverter:
+5. ArguConverter:
 
-   Implemented `IArgumentConverter` interface, abstract class, should be inherited by custom Converter.
+   Implemented `IArguConverter` interface, abstract class, should be inherited by custom Converter.
 
-6. ArgumentConverterManager:
+6. ArguConverterManager:
 
-   Helps create `ArgumentConverter` rapidly.
+   Helps create `ArguConverter` rapidly.
 
 7. CommandLineSegment:
 
    Component of command line string.
 
-8. ArgumentParser:
+8. ArguParser:
 
    Helps parse `CommandLineSegment` to `IArgument`
 
@@ -186,9 +219,9 @@ Argument of command, can have a name, implemented `IArgument`, when invoking met
 
 
 
-## ArgumentParser
+## ArguParser
 
-Here is all build-in `ArgumentParsers`:
+Here is all build-in `ArguParsers`:
 
 1. ArguParser:
 
@@ -212,13 +245,13 @@ Here is all build-in `ArgumentParsers`:
 
 
 
-## ArgumentConverter
+## ArguConverter
 
-Here is all build-in `ArgumentConverter`:
+Here is all build-in `ArguConverter`:
 
 1. ArguConverter:
 
-   The default `ArgumentConverter` which returns the source value without any conversion
+   The default `ArguConverter` which returns the source value without any conversion
 
 2. BoolArguConverter:
 
@@ -252,30 +285,30 @@ Here is all build-in `ArgumentConverter`:
 
 13. ForeachArguConverter&lt;TConverter&gt;:
 
-    Helps convert to Array, only used for variable-length parameter (decorated by `params`), `TConverter` must implement `IArgumentConverter`, each value of source string array will be converted by the specified Converter.
+    Helps convert to Array, only used for variable-length parameter (decorated by `params`), `TConverter` must implement `IArguConverter`, each value of source string array will be converted by the specified Converter.
 
 14. CharArrayArguConverter:
 
     Helps convert to char array, it calls `string.ToCharArray()` to do conversion.
 
 
-## About ArgumentParser
+## About ArguParser
 
 ### Custom Parser:
 
-To define custom `ArgumentParser`, your must follow these rules:
+To define custom `ArguParser`, your must follow these rules:
 
-1. Implements `IArgumentParser`
+1. Implements `IArguParser`
 2. After parsing, the reference parameter `index` must leave the parts of result(IArgument), for example, at the index 3, in your custom parser, it will return the result (result was parsed successfully), and the result is from two `CommandLineSegment`s, then the index must be 5 (out of 3 and 4).
 
-## About ArgumentConverter
+## About ArguConverter
 
 ### Custom Converter:
 
-The recommended way to define a custom `ArgumentConverter` is this:
+The recommended way to define a custom `ArguConverter` is this:
 
 ```csharp
-class MyConverter : ArgumentConverter<MyType>    // inherit ArgumentConverter<T> but not IArgumentConverter<T>
+class MyConverter : ArguConverterBase<MyType>    // inherit ArguConverter<T> but not IArguConverter<T>
 {
     public override MyType Convert(string argument)
     {
@@ -288,27 +321,27 @@ class MyConverter : ArgumentConverter<MyType>    // inherit ArgumentConverter<T>
 }
 ```
 
-The reason to inherit `ArgumentConverter<T>` but not `IArgumentConverter<T>` is, in `ArgumentConverter<T>`, all overloads calls two methods:
+The reason to inherit `ArguConverterBase<T>` but not `IArguConverter<T>` is, in `ArguConverterBase<T>`, all overloads calls two methods:
 
 1. T Convert(string argument);
 2. bool TryConverter(string argument, out T result);
 
-So, if you inherit `ArgumentConverter<T>`, you just need to override these two methods.
+So, if you inherit `ArguConverterBase<T>`, you just need to override these two methods.
 
 ### Tips:
 
-1. Do NOT create a `ArgumentConverter` with new expression, use `ArgumentConverterManager.GetConverter<T>()`.
+1. Do NOT create a `ArguConverter` with new expression, use `ArguConverterManager.GetConverter<T>()`.
 
 
 
 ## FAQ
 
-1. When I calling `CommandObject.ExecuteCommand(IArgumentParser[] parsers, string cmdline)`, but some of parsers don't work:
+1. When I calling `CommandObject.ExecuteCommand(IArguParser[] parsers, string cmdline)`, but some of parsers don't work:
 
    ```csharp
    // you must specify parsers in a correct order, or it will like this:
    CommandObject<AppCommands> myCmds = new CommandObject<AppCommands>();
-   myCmds.ExecuteCommand(new IArgumentParser[]
+   myCmds.ExecuteCommand(new IArguParser[]
    {
        new ArguParser(),                // in this case, FieldArguParser and PropertyArguParser will not work.
        new FieldArguParser(),           // this is because that ArguParser can parse ANY CommandLineSegments

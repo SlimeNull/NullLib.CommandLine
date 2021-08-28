@@ -11,6 +11,9 @@ namespace TestConsole
             public class MathCommands
             {
 
+                [CommandHost]
+                public CommandObject<FuckCommand> Fuck { get; } = new CommandObject<FuckCommand>();
+
                 [Command(typeof(FloatArguConverter), typeof(FloatArguConverter), Description = "")]      // the build-in ArgumentConverter in NullLib.CommandLine
                 public float Plus(float a, float b)
                 {
@@ -34,6 +37,15 @@ namespace TestConsole
                 public double Log(double n, double newBase = System.Math.E)    // you can also use optional parameter
                 {
                     return System.Math.Log(n, newBase);
+                }
+
+                public class FuckCommand : NCommand
+                {
+                    [Command]
+                    public string TestFuck()
+                    {
+                        return "TestFuck, 这是套娃三层的指令";
+                    }
                 }
             }
 

@@ -132,16 +132,16 @@ namespace NullLib.CommandLine
         {
             return TryFormatArguments(paramInfos, args, StringComparison.Ordinal, out result);
         }
-        public static bool TryConvertArguments(CommandArguAttribute[] paramInfos, IArgumentConverter[] converters, ref IArgument[] args, StringComparison stringComparison)
+        public static bool TryConvertArguments(CommandArguAttribute[] paramInfos, IArguConverter[] converters, ref IArgument[] args, StringComparison stringComparison)
         {
             bool ignoreCases = stringComparison.IsIgnoreCase();
 
             IEnumerator enumerator = converters.GetEnumerator();
-            IArgumentConverter curConvtr = ArguConverterManager.GetConverter<ArguConverter>();
+            IArguConverter curConvtr = ArguConverterManager.GetConverter<ArguConverter>();
             for (int i = 0, end = args.Length; i < end; i++)
             {
                 if (enumerator.MoveNext() && enumerator.Current != null)
-                    curConvtr = enumerator.Current as IArgumentConverter;
+                    curConvtr = enumerator.Current as IArguConverter;
                 if (!paramInfos[i].ParameterType.IsAssignableFrom(curConvtr.TargetType))
                     return false;
                 IArgument curArgu = args[i];
@@ -224,16 +224,16 @@ namespace NullLib.CommandLine
         {
             return FormatArguments(method, paramInfos, args, StringComparison.Ordinal);
         }
-        public static IArgument[] ConvertArguments(MethodInfo method, CommandArguAttribute[] paramInfos, IArgumentConverter[] converters, IArgument[] args, StringComparison stringComparison)
+        public static IArgument[] ConvertArguments(MethodInfo method, CommandArguAttribute[] paramInfos, IArguConverter[] converters, IArgument[] args, StringComparison stringComparison)
         {
             bool ignoreCases = stringComparison.IsIgnoreCase();
 
             IEnumerator enumerator = converters.GetEnumerator();
-            IArgumentConverter curConvtr = ArguConverterManager.GetConverter<ArguConverter>();
+            IArguConverter curConvtr = ArguConverterManager.GetConverter<ArguConverter>();
             for (int i = 0, end = args.Length; i < end; i++)
             {
                 if (enumerator.MoveNext() && enumerator.Current != null)
-                    curConvtr = enumerator.Current as IArgumentConverter;
+                    curConvtr = enumerator.Current as IArguConverter;
                 if (!paramInfos[i].ParameterType.IsAssignableFrom(curConvtr.TargetType))
                     throw new CommandParameterConvertException(method, "Parameter type not match argument type.");
                 IArgument curArgu = args[i];

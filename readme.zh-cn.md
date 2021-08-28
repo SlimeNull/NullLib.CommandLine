@@ -11,7 +11,7 @@
 一个示例类型:
 
 ```csharp
-public class AppCommands
+public class AppCommand
 {
     [Command]
     public void HelloWorld()
@@ -29,7 +29,7 @@ using NullLib.CommandLine;
 
 class Program
 {
-    static CommandObject<AppCommands> AppCommandObject = new CommandObject<AppCommands>();   // 实例化一个 CommandObject 对象
+    static CommandObject<AppCommand> AppCommandObject = new CommandObject<AppCommand>();   // 实例化一个 CommandObject 对象
     static void Main(string[] args)
     {
         Console.WriteLine("Now input commands.");
@@ -59,12 +59,12 @@ Now input commands.
 Hello world!
 ```
 
-为每一个参数指定 `ArgumentConverter` 来以传递参数到方法.
+为每一个参数指定 `ArguConverter` 来以传递参数到方法.
 
-那么, 我们再试试将这些方法添加到 `AppCommands` 中
+那么, 我们再试试将这些方法添加到 `AppCommand` 中
 
 ```csharp
-[Command(typeof(FloatArguConverter), typeof(FloatArguConverter))]      // NullLib.CommandLine 中的内置 ArgumentConverter
+[Command(typeof(FloatArguConverter), typeof(FloatArguConverter))]      // NullLib.CommandLine 中的内置 ArguConverter
 public float Plus(float a, float b)
 {
     return a + b;
@@ -104,7 +104,7 @@ public void SetBackground(ConsoleColor color)
 }
 ```
 
-Run and input:
+运行并输入:
 
 ```txt
 Now input commands.
@@ -128,9 +128,42 @@ False
 你可以通过一个枚举类型的名字或整数值来进行转换
 ```
 
+嵌套的指令支持:
+
+```csharp
+public class MyCommand
+{
+    [CommandHost]   // 为 CommandObject 属性成员添加 CommandHost 特性来表示该 CommandObject 为嵌入指令
+    public CommandObject<MathCommand> Math { get; } = new();   // 实例化成员
+    
+    [Command]
+    public string Hello() => "Hello, world.";
+    
+    public class MathCommand
+    {
+        // 嵌入指令中实现 Plus 指令
+        [Command(typeof(DoubleArguConverter))]
+        public double Plus(double a, double b) => a + b;
+    }
+}
+
+/*
+    在上面的代码中, 我们为 MyCommand 类型添加了一个嵌入指令, 于是将支持下面这两个指令:
+    Math Plus a:Double b:Double
+    Hello
+*/
+```
+
+内置的指令文档概述生成:
+
+```csharp
+CommandObject<AppCommand> AppCommandObject = new();
+Console.WriteLine(AppCommandObject.GenCommandOverviewText());    // 查看所有受支持的指令
+```
 
 
-## Types
+
+## 类型
 
 1. CommandAttribute:
 
@@ -148,19 +181,19 @@ False
 
    帮助分析命令行字符串以调用方法
 
-5. ArgumentConverter:
+5. ArguConverter:
 
-   继承 `IArgumentConverter` 接口, 抽象类, 应该被自定义转换器继承
+   继承 `IArguConverter` 接口, 抽象类, 应该被自定义转换器继承
 
-6. ArgumentConverterManager:
+6. ArguConverterManager:
 
-   帮助快速创建 `ArgumentConverter`
+   帮助快速创建 `ArguConverter`
 
 7. CommandLineSegment:
 
    命令行字符串的构成部分
 
-8. ArgumentParser:
+8. ArguParser:
 
    帮助将 `CommandLineSegment` 分析为 `IArgument`
 
@@ -168,7 +201,7 @@ False
 
 ## CommandLineSegment
 
-CommandLineSegment 是命令行字符串的组成部分
+CommandLineSegment 是命令行字符串的组成部分, 它可以看作被空格分隔的一个个部分, 但是也支持由双引号所包含的字符串.
 
 例如, 在 `myprogram param1 "param2"` 中, 有三个 CommandLineSegment:
 
@@ -182,13 +215,13 @@ CommandLineSegment 是命令行字符串的组成部分
 
 ## Argument
 
-命令的参数, 可有名称, 继承 `IArgument`, 当调用方法时, 将会被传递
+命令的参数, 可有名称, 继承 `IArgument`, 当调用方法时, 将会被传递.
 
 
 
-## ArgumentParser
+## ArguParser
 
-下面是所有内置的 `ArgumentParsers`
+下面是所有内置的 `ArguParsers`
 
 1. ArguParser:
 
@@ -212,13 +245,13 @@ CommandLineSegment 是命令行字符串的组成部分
 
 
 
-## ArgumentConverter
+## ArguConverter
 
-Here is all build-in `ArgumentConverter`:
+Here is all build-in `ArguConverter`:
 
 1. ArguConverter:
 
-   不会做任何转换而直接返回源值的默认的 `ArgumentConverter`
+   不会做任何转换而直接返回源值的默认的 `ArguConverter`
 
 2. BoolArguConverter:
 
@@ -252,30 +285,30 @@ Here is all build-in `ArgumentConverter`:
 
 13. ForeachArguConverter&lt;TConverter&gt;:
 
-    帮助转换到一个数组, 仅用于可变参数(使用 `params` 修饰), `TConverter` 必须实现 `IArgumentConverter` 接口, 每个值都将被指定的转换器转换, 最终得到一个对应类型的数组.
+    帮助转换到一个数组, 仅用于可变参数(使用 `params` 修饰), `TConverter` 必须实现 `IArguConverter` 接口, 每个值都将被指定的转换器转换, 最终得到一个对应类型的数组.
 
 14. CharArrayArguConverter:
 
     帮助转换到字符数组, 它调用 `string.ToCharArray()` 来进行转换.
 
 
-## About ArgumentParser
+## About ArguParser
 
 ### Custom Parser:
 
-定义自定义的 `ArgumentParser`, 你需要遵守下面的规则:
+定义自定义的 `ArguParser`, 你需要遵守下面的规则:
 
-1. 实现 `IArgumentParser` 接口
+1. 实现 `IArguParser` 接口
 2. 在分析完毕后, 引用参数 `index` 必须离开参数结果(IArgument)的区域, 例如, 在索引 3, 在你的自定义分析器中, 他将返回结果 (结果被成功分析), 并且分析结果来自于两个 `CommandLineSegment`, 所以 `index` 必须是 5 (在 3 和 4 之外).
 
-## About ArgumentConverter
+## About ArguConverter
 
 ### 自定义 Converter:
 
-定义自定义 `ArgumentConverter` 的推荐方式是这样:
+定义自定义 `ArguConverter` 的推荐方式是这样:
 
 ```csharp
-class MyConverter : ArgumentConverter<MyType>    // 继承 ArgumentConverter<T> 而不是 IArgumentConverter<T>
+class MyConverter : ArguConverterBase<MyType>    // 继承 ArguConverter<T> 而不是 IArguConverter<T>
 {
     public override MyType Convert(string argument)
     {
@@ -288,27 +321,27 @@ class MyConverter : ArgumentConverter<MyType>    // 继承 ArgumentConverter<T> 
 }
 ```
 
-继承 `ArgumentConverter<T>` 而不是 `IArgumentConverter<T>` 的原因是, 在 `ArgumentConverter<T>` 中, 所有方法重载均调用这两个方法:
+继承 `ArguConverter<T>` 而不是 `IArguConverter<T>` 的原因是, 在 `ArguConverter<T>` 中, 所有方法重载均调用这两个方法:
 
 1. T Convert(string argument);
 2. bool TryConverter(string argument, out T result);
 
-所以如果继承 `ArgumentConverter<T>`, 你只需要重写这两个方法.
+所以如果继承 `ArguConverterBase<T>`, 你只需要重写这两个方法.
 
 ### Tips:
 
-1. 不要使用 new 表达式来创建一个 `ArgumentConverter` 实例, 请使用 `ArgumentConverterManager.GetConverter<T>()`.
+1. 不要使用 new 表达式来创建一个 `ArguConverter` 实例, 请使用 `ArguConverterManager.GetConverter<T>()`.
 
 
 
 ## FAQ
 
-1. 当我调用 `CommandObject.ExecuteCommand(IArgumentParser[] parsers, string cmdline)` 时, 某些分析器不能正常使用:
+1. 当我调用 `CommandObject.ExecuteCommand(IArguParser[] parsers, string cmdline)` 时, 某些分析器不能正常使用:
 
    ```csharp
    // 你必须以正确的顺序指定分析器, 否则就会这样:
-   CommandObject<AppCommands> myCmds = new CommandObject<AppCommands>();
-   myCmds.ExecuteCommand(new IArgumentParser[]
+   CommandObject<AppCommand> myCmds = new CommandObject<AppCommand>();
+   myCmds.ExecuteCommand(new IArguParser[]
    {
        new ArguParser(),                // 在这种情况下, FieldArguParser 和 PropertyArguParser 将不起作用.
        new FieldArguParser(),           // 这是因为 ArguParser 可以分析任何 CommandLineSegments, 所以你应该
