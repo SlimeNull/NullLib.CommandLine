@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -54,9 +55,13 @@ namespace TestConsole
                 {
                     Console.Error.WriteLine("Syntax error: can't execute command.");
                 }
-                catch
+                catch(TargetInvocationException)
                 {
                     Console.Error.WriteLine("Method error: exception thrown when execute method.");
+                }
+                catch(Exception)
+                {
+                    Console.Error.WriteLine("Unexpected exception");
                 }
 #endif
             }

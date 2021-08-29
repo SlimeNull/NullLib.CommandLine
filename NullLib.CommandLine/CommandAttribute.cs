@@ -37,8 +37,9 @@ namespace NullLib.CommandLine
         {
             try
             {
-                this.arguConverters = new IArguConverter[arguConverters.Length];
-                for (int i = 0, end = arguConverters.Length; i < end; i++)
+                int convtrLen = arguConverters is not null ? arguConverters.Length : 0;
+                this.arguConverters = new IArguConverter[convtrLen];
+                for (int i = 0, end = convtrLen; i < end; i++)
                     this.arguConverters[i] = ArguConverterManager.GetConverter(arguConverters[i]);
             }
             catch (ArgumentOutOfRangeException)
@@ -153,6 +154,7 @@ namespace NullLib.CommandLine
         private string cmdArguAlias;
         private string description = null;
         private object defaultValue;
+        private bool hasDefaltValue;
         private bool isParameterArray;
         private Type parameterType;
 
@@ -169,18 +171,21 @@ namespace NullLib.CommandLine
 
         public void LoadTarget(ParameterInfo info)
         {
-            defaultValue = info.DefaultValue;
+            hasDefaltValue = info.HasDefaultValue;
+            defaultValue = info.HasDefaultValue;
             isParameterArray = info.GetCustomAttribute<ParamArrayAttribute>() != null;
             parameterType = info.ParameterType;
             if (cmdArguName == null)
                 cmdArguName = info.Name;
         }
-        public bool HasDefaultValue => defaultValue != null;
+        public bool HasDefaultValue => hasDefaltValue;
         public bool IsParameterArray { get => isParameterArray; }
         public Type ParameterType { get => parameterType; }
         public bool IsCorrectName(string arguName, StringComparison stringComparison)
         {
-            return arguName != null && (arguName.Equals(cmdArguName, stringComparison) || arguName.Equals(cmdArguAlias));
+            return arguName != null && (
+                arguName.Equals(cmdArguName, stringComparison) || 
+                arguName.Equals(cmdArguAlias));
         }
 
         public string GetDifinitionString(bool alias = false)
@@ -188,15 +193,21 @@ namespace NullLib.CommandLine
             return $"{(IsParameterArray ? "*" : null)}{(alias ? CommandArguAlias : CommandArguName)}:{ParameterType.Name}";
         }
 
+        /// <summary>
+        /// Argument name (default save as current method parameter)
+        /// </summary>
         public string CommandArguName { get => cmdArguName; set => cmdArguName = value; }
+        /// <summary>
+        /// Argument alias (default no alias for this argument)
+        /// </summary>
         public string CommandArguAlias { get => cmdArguAlias; set => cmdArguAlias = value; }
 
         /// <summary>
-        /// Description of Parameter
+        /// Description of Argument
         /// </summary>
         public string Description { get => description; set => description = value; }
         /// <summary>
-        /// Default value of Parameter
+        /// Default value of parameter
         /// </summary>
         public object DefaultValue => defaultValue;
     }

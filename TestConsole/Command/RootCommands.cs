@@ -41,10 +41,10 @@ namespace TestConsole
 
                 public class FuckCommand : NCommand
                 {
-                    [Command]
-                    public string TestFuck()
+                    [Command(typeof(ArguConverter))]
+                    public string TestFuck(string something = null)
                     {
-                        return "TestFuck, 这是套娃三层的指令";
+                        return $"TestFuck, 这是套娃三层的指令{(something is null ? "" : $": {something}")}";
                     }
                 }
             }

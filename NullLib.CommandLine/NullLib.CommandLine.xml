@@ -391,14 +391,24 @@
             Commnad parameter infomation
             </summary>
         </member>
+        <member name="P:NullLib.CommandLine.CommandArguAttribute.CommandArguName">
+            <summary>
+            Argument name (default save as current method parameter)
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.CommandArguAttribute.CommandArguAlias">
+            <summary>
+            Argument alias (default no alias for this argument)
+            </summary>
+        </member>
         <member name="P:NullLib.CommandLine.CommandArguAttribute.Description">
             <summary>
-            Description of Parameter
+            Description of Argument
             </summary>
         </member>
         <member name="P:NullLib.CommandLine.CommandArguAttribute.DefaultValue">
             <summary>
-            Default value of Parameter
+            Default value of parameter
             </summary>
         </member>
         <member name="T:NullLib.CommandLine.CommandObject">
