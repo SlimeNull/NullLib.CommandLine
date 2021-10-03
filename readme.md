@@ -1,4 +1,13 @@
-# NullLib.CommandLine
+# NullLib.CommandLine <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/SlimeNull/NullLib.CommandLine?style=social">
+
+<div align="center">
+	
+<img alt="Nuget" src="https://img.shields.io/nuget/v/NullLib.CommandLine">
+<img alt="Nuget" src="https://img.shields.io/nuget/dt/NullLib.CommandLine">
+<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/SlimeNull/NullLib.CommandLine">
+<img alt="GitHub code size in bytes" src="https://img.shields.io/github/languages/code-size/SlimeNull/NullLib.CommandLine">
+	
+</div>
 
 ## Index / 索引
 
