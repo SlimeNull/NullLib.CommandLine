@@ -411,6 +411,16 @@
             Default value of parameter
             </summary>
         </member>
+        <member name="T:NullLib.CommandLine.CommandHome">
+            <summary>
+            Basic command class for NullLib.CommandLine commands, provides basic functions for using
+            </summary>
+        </member>
+        <member name="P:NullLib.CommandLine.CommandHome.CommandObject">
+            <summary>
+            Get the CommandObject which is controlling current instance
+            </summary>
+        </member>
         <member name="T:NullLib.CommandLine.CommandObject">
             <summary>
             CommandObject is used for calling method by command line.
@@ -673,16 +683,6 @@
         <member name="P:NullLib.CommandLine.FieldArguParser.Separator">
             <summary>
             Field argument seperator, default is ':'
-            </summary>
-        </member>
-        <member name="T:NullLib.CommandLine.NCommand">
-            <summary>
-            Basic command class for NullLib.CommandLine commands, provides basic functions for using
-            </summary>
-        </member>
-        <member name="P:NullLib.CommandLine.NCommand.CommandObject">
-            <summary>
-            Get the CommandObject which is controlling current instance
             </summary>
         </member>
     </members>

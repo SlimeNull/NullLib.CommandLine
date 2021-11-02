@@ -118,7 +118,7 @@ Now input commands.
 2.07944154167984
 >>> Sum 1 2 3 4
 10
->>> Print "some text\tescaped char is also supported"
+>>> Print "some text`tescaped char is also supported"
 some text       escaped char is also supported
 >>> StringEquals qwq awa
 False
@@ -159,7 +159,34 @@ Intergrated commands overview text generation:
 ```csharp
 CommandObject<AppCommand> AppCommandObject = new();
 Console.WriteLine(AppCommandObject.GenCommandOverviewText());    // Show all available commands
+Console.WriteLine(AppCommandObject.GenCommandDetailsText("Help", StringComparison.OrdinalIgnoreCase));  // See document of Help command
 ```
+
+Get the CommandObject which is using the current custom Command class instance
+
+```csharp
+using System;
+using NullLib.CommandLine;
+
+class MyCommands : CommandHome  // Inherit from CommandHome
+{
+    [Command]
+    public void Hello()
+    {
+        Console.WriteLine(CommandObject.GenCommandOverviewText());  // Use the CommandObject property of CommandHome
+        
+        // If there is not CommandObject is using the current instance, it will returns null
+    }
+}
+```
+
+Change the escape char for your program
+
+```csharp
+CommandParser.EscapeChar = '^';  // Change escape char to '^' (default is '`')
+```
+
+
 
 
 

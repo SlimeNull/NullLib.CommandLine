@@ -12,7 +12,7 @@
 
 3. To read whole document, open file in source repository which name like "readme.language.md". readme.en-us.md for English
 
-   这不是全部, 阅读完整版文档, 请打开本仓库中名字像 "readme.语言.md" 的文件. 例如, 中文文档是 readme.zh-cn.md
+   这不是全部, 阅读完整版文档, 请打开源仓库中名字像 "readme.语言.md" 的文件. 例如, 中文文档是 readme.zh-cn.md
    
 4. For more information, go to [Github](https://github.com/SlimeNull/NullLib.CommandLine)
 
@@ -138,7 +138,7 @@ Now input commands.
 2.07944154167984
 >>> Sum 1 2 3 4
 10
->>> Print "some text\tescaped char is also supported"
+>>> Print "some text`tescaped char is also supported"
 some text       escaped char is also supported
 >>> StringEquals qwq awa
 False
@@ -266,7 +266,7 @@ Now input commands.
 2.07944154167984
 >>> Sum 1 2 3 4
 10
->>> Print "一些文本\t转义字符也是受支持的"
+>>> Print "一些文本`t转义字符也是受支持的"
 一些文本	转义字符也是受支持的
 >>> StringEquals qwq awa
 False

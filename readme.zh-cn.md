@@ -118,7 +118,7 @@ Now input commands.
 2.07944154167984
 >>> Sum 1 2 3 4
 10
->>> Print "一些文本\t转义字符也是受支持的"
+>>> Print "一些文本`t转义字符也是受支持的"
 一些文本	转义字符也是受支持的
 >>> StringEquals qwq awa
 False
@@ -159,7 +159,33 @@ public class MyCommand
 ```csharp
 CommandObject<AppCommand> AppCommandObject = new();
 Console.WriteLine(AppCommandObject.GenCommandOverviewText());    // 查看所有受支持的指令
+Console.WriteLine(AppCommandObject.GenCommandDetailsText("Help", StringComparison.OrdinalIgnoreCase));  // 查看 Help 指令的帮助信息
 ```
+
+在自定义指令类中获取使用了当前实例的 CommandObject
+
+```csharp
+using System;
+using NullLib.CommandLine;
+
+class MyCommands : CommandHome  // 继承 CommandHome
+{
+    public void Hello()
+    {
+        Console.WriteLine(CommandObject.GenCommandOverviewText());   // 直接访问 CommandHome 的 CommandObject 属性即可
+        
+        // 如果没有 CommandObject 使用该实例, 那么将获取到 null
+    }
+}
+```
+
+为你的程序改变转义符
+
+```csharp
+CommandParser.EscapeChar = '^';  // 将转义符设定为 '^' (默认是 '`')
+```
+
+
 
 
 

@@ -6,7 +6,7 @@ namespace TestConsole
 {
     partial class Program
     {
-        partial class MyCommands : NCommand
+        partial class MyCommands : CommandHome
         {
             public class MathCommands
             {
@@ -39,7 +39,7 @@ namespace TestConsole
                     return System.Math.Log(n, newBase);
                 }
 
-                public class FuckCommand : NCommand
+                public class FuckCommand : CommandHome
                 {
                     [Command(typeof(ArguConverter))]
                     public string TestFuck(string something = null)
@@ -106,8 +106,15 @@ namespace TestConsole
             }
 
             [Command]
+            public void Help()
+            {
+                Console.WriteLine(this.CommandObject.GenCommandOverviewText());
+            }
+            [Command]
             public void Help(string cmdname)
             {
+                Console.WriteLine(CommandObject.GenCommandDetailsText(cmdname, StringComparison.OrdinalIgnoreCase));
+                return;
                 if (cmdname is null)
                     Console.WriteLine(this.CommandObject.GenCommandOverviewText());
                 else

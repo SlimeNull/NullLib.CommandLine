@@ -52,7 +52,7 @@ namespace NullLib.CommandLine
         {
             this.instance = instance ?? throw new ArgumentNullException(nameof(instance));
 
-            if (instance is NCommand ncmd)
+            if (instance is CommandHome ncmd)
                 ncmd.CommandObject = this;
 
             instanceType = instance.GetType();
@@ -404,7 +404,6 @@ namespace NullLib.CommandLine
                     foreach (var _paramInfo in _paramInfos)
                         if (!string.IsNullOrWhiteSpace(_paramInfo.Description))
                             yield return new string[] { "    -" }.Concat(new string[] { _paramInfo.CommandArguName, ":", _paramInfo.Description });
-                    yield break;
                 }
             }
         }

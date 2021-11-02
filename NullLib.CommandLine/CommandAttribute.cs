@@ -172,7 +172,7 @@ namespace NullLib.CommandLine
         public void LoadTarget(ParameterInfo info)
         {
             hasDefaltValue = info.HasDefaultValue;
-            defaultValue = info.HasDefaultValue;
+            defaultValue = info.DefaultValue;
             isParameterArray = info.GetCustomAttribute<ParamArrayAttribute>() != null;
             parameterType = info.ParameterType;
             if (cmdArguName == null)

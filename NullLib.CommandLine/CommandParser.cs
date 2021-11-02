@@ -13,10 +13,10 @@ namespace NullLib.CommandLine
         /// Try to parse an Argument from commandline segments
         /// </summary>
         /// <param name="index">Current index</param>
-        /// <param name="segments">Source segments</param>
+        /// <param name="arguments">Source segments</param>
         /// <param name="result">Result Argument</param>
         /// <returns>If this parsing was successed</returns>
-        bool TryParse(ref int index, ref CommandSegment[] segments, out IArgument result);
+        bool TryParse(ref int index, ref CommandSegment[] arguments, out IArgument result);
         /// <summary>
         /// Format param name and param default value to a standard format of current parser
         /// </summary>
@@ -30,7 +30,7 @@ namespace NullLib.CommandLine
     /// </summary>
     public static class CommandParser
     {
-        private static char escapeChar = '\\';
+        private static char escapeChar = '`';
 
         /// <summary>
         /// EscapeChar for string parsing, defualt is '\\'
@@ -310,7 +310,7 @@ namespace NullLib.CommandLine
 
                         index++;
                         CommandSegment content = arguments[index];
-                        result = new Argument(name.Content.Substring(0, name.Content.Length - 1), content.Content);
+                        result = new Argument(name.Content.Substring(0, eqindex), content.Content);
                         index++;
                         return true;
                     }

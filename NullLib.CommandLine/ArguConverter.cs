@@ -233,7 +233,7 @@ namespace NullLib.CommandLine
         }
         public virtual TTarget Convert(object argu)
         {
-            return Convert(argu as string);
+            return Convert(argu?.ToString());
         }
 
         public virtual string ConvertBack(TTarget obj)
