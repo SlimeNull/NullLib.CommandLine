@@ -14,6 +14,7 @@ namespace NullLib.CommandLine
     [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
     public sealed class CommandAttribute : Attribute
     {
+        readonly bool autoSelectConverters;
         readonly IArguConverter[] arguConverters;
 
         /// <summary>
@@ -25,9 +26,9 @@ namespace NullLib.CommandLine
         /// Initialize a new instance of CommandAttribute with no special IArgumentConverter
         /// If your method only has string parameters, you can use this.
         /// </summary>
-        public CommandAttribute()
+        public CommandAttribute() : this(null)
         {
-            arguConverters = new IArguConverter[0];
+
         }
         /// <summary>
         /// Initialize a new instance of CommandAttribute
@@ -35,9 +36,16 @@ namespace NullLib.CommandLine
         /// <param name="arguConverters"></param>
         public CommandAttribute(params Type[] arguConverters)
         {
+            
             try
             {
-                int convtrLen = arguConverters is not null ? arguConverters.Length : 0;
+                if (arguConverters == null)
+                {
+                    autoSelectConverters = true;
+                    return;
+                }
+
+                int convtrLen = arguConverters.Length;
                 this.arguConverters = new IArguConverter[convtrLen];
                 for (int i = 0, end = convtrLen; i < end; i++)
                     this.arguConverters[i] = ArguConverterManager.GetConverter(arguConverters[i]);

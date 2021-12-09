@@ -10,11 +10,32 @@ using NullLib.CommandLine;
 
 namespace TestConsole
 {
+    static class StrEx
+    {
+        public static int CountSubstring(this string self, string substr)
+        {
+            int
+                substrLen = substr.Length;
+            int
+                startIndex = 0,
+                count = 0;
+
+            int tmp;
+            while ((tmp = self.IndexOf(substr, startIndex)) >= 0)
+            {
+                startIndex = tmp + substrLen;
+                count++;
+            }
+
+            return count;
+        }
+    }
     partial class Program
     {
         static Program()
         {
             CommandParser.EscapeChar = '`';
+            Console.WriteLine("QWQAWAQWQAWAWQWQ".CountSubstring("QWQ"));
         }
 
         static void Main(string[] args)

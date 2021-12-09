@@ -2,7 +2,9 @@
 
 通过命令行字符串来方便快捷的调用 C# 中定义的方法
 
-## 使用方式 
+更多关于此库的使用方式, 见 [用户手册](./Manual.zh.md)
+
+## 使用方式
 
 首先, 在 **NullLib.CommandLine** 中用于调用方法的最基本类型是 `CommandObject`, 它包含了方法的各种信息, 例如 `MethodInfo`, `ParameterInfo`, 以及属性.
 
@@ -40,7 +42,7 @@ class Program
             if (!AppCommandObject.TryExecuteCommand(cmdline, out var result))
             {
                 if (result != null)             // 如果一个方法没有返回值, 则结果是 null.
-	                Console.WriteLine(result);
+                    Console.WriteLine(result);
             }
             else
             {
@@ -119,7 +121,7 @@ Now input commands.
 >>> Sum 1 2 3 4
 10
 >>> Print "一些文本`t转义字符也是受支持的"
-一些文本	转义字符也是受支持的
+一些文本    转义字符也是受支持的
 >>> StringEquals qwq awa
 False
 >>> SetBackground White
@@ -135,10 +137,10 @@ public class MyCommand
 {
     [CommandHost]   // 为 CommandObject 属性成员添加 CommandHost 特性来表示该 CommandObject 为嵌入指令
     public CommandObject<MathCommand> Math { get; } = new();   // 实例化成员
-    
+
     [Command]
     public string Hello() => "Hello, world.";
-    
+
     public class MathCommand
     {
         // 嵌入指令中实现 Plus 指令
@@ -173,7 +175,7 @@ class MyCommands : CommandHome  // 继承 CommandHome
     public void Hello()
     {
         Console.WriteLine(CommandObject.GenCommandOverviewText());   // 直接访问 CommandHome 的 CommandObject 属性即可
-        
+
         // 如果没有 CommandObject 使用该实例, 那么将获取到 null
     }
 }
@@ -185,45 +187,39 @@ class MyCommands : CommandHome  // 继承 CommandHome
 CommandParser.EscapeChar = '^';  // 将转义符设定为 '^' (默认是 '`')
 ```
 
-
-
-
-
 ## 类型
 
 1. CommandAttribute:
-
+   
    可以通过命令行字符串执行的方法必须有一个 `CommandAttribute` 属性
 
 2. CommandObject:
-
+   
    用于使用命令行字符串调用方法的类
 
 3. CommandInvoker:
-
+   
    帮助通过 `IArguments` 调用方法
 
 4. CommandParser:
-
+   
    帮助分析命令行字符串以调用方法
 
 5. ArguConverter:
-
+   
    继承 `IArguConverter` 接口, 抽象类, 应该被自定义转换器继承
 
 6. ArguConverterManager:
-
+   
    帮助快速创建 `ArguConverter`
 
 7. CommandLineSegment:
-
+   
    命令行字符串的构成部分
 
 8. ArguParser:
-
+   
    帮助将 `CommandLineSegment` 分析为 `IArgument`
-
-
 
 ## CommandLineSegment
 
@@ -237,57 +233,51 @@ CommandLineSegment 是命令行字符串的组成部分, 它可以看作被空�
 
 将命令行字符串分割为 CommandLineSegment[], 使用 `CommandParser.SplitCommandLine(string str)`
 
-
-
 ## Argument
 
 命令的参数, 可有名称, 继承 `IArgument`, 当调用方法时, 将会被传递.
-
-
 
 ## ArguParser
 
 下面是所有内置的 `ArguParsers`
 
 1. ArguParser:
-
-   可将任何部分分析为一个 `Argument`
    
-2. IdentifierArguParser:
+   可将任何部分分析为一个 `Argument`
 
+2. IdentifierArguParser:
+   
    可将一个标识符部分分析为一个 `Argument`. 对应的正则表达式是 *"{A-Za-z\_}{A-Za-z0-9\_}\*"*
 
 3. StringArguParser:
-
+   
    可以将任何 Quoted(被双引号包围的) 部分分析为 `Argument`
 
 4. FieldArguParser:
-
+   
    可以将像 <u>*name=value*</u> 的一个部分, 或者像 <u>*name= value*</u> 的两个部分分析为一个 `Argument`, 另外, 你可以指定分隔符, 默认分隔符是 '='
 
 5. PropertyArguParser:
-
+   
    可以将像 <u>*-name value*</u> 的两个部分分析为 `Argument`, 并且你也可以指定 <u>*name*</u> 的起始字符串, 默认是 "-"
-
-
 
 ## ArguConverter
 
 Here is all build-in `ArguConverter`:
 
 1. ArguConverter:
-
+   
    不会做任何转换而直接返回源值的默认的 `ArguConverter`
 
 2. BoolArguConverter:
-
+   
    帮助转换到布尔值, 使用 bool.Parse 和 bool.TryParse
 
 3. CharArguConverter:
-
+   
    帮助转换到字符, 仅当字符串有唯一一个字符时, 返回这个字符, 否则转换失败
 
-4.   ByteArguConverter:
+4. ByteArguConverter:
 
 5. ShortArguConverter:
 
@@ -302,21 +292,20 @@ Here is all build-in `ArguConverter`:
 10. BigIntArguConverter:
 
 11. DecimalArguConverter:
-
+    
     上面提到的转换器均返回对应的数字类型, 并且它们都通过调用对应类型的 `Parse` 和 `TryParse` 方法实现转换
 
 12. EnumArguConverter&lt;T&gt;:
-
+    
     帮助转换到枚举类型, T 应该被指定为一个枚举类型. 它可以从枚举值的名称或数字值来转换
 
 13. ForeachArguConverter&lt;TConverter&gt;:
-
+    
     帮助转换到一个数组, 仅用于可变参数(使用 `params` 修饰), `TConverter` 必须实现 `IArguConverter` 接口, 每个值都将被指定的转换器转换, 最终得到一个对应类型的数组.
 
 14. CharArrayArguConverter:
-
+    
     帮助转换到字符数组, 它调用 `string.ToCharArray()` 来进行转换.
-
 
 ## About ArguParser
 
@@ -358,12 +347,10 @@ class MyConverter : ArguConverterBase<MyType>    // 继承 ArguConverter<T> 而�
 
 1. 不要使用 new 表达式来创建一个 `ArguConverter` 实例, 请使用 `ArguConverterManager.GetConverter<T>()`.
 
-
-
 ## FAQ
 
 1. 当我调用 `CommandObject.ExecuteCommand(IArguParser[] parsers, string cmdline)` 时, 某些分析器不能正常使用:
-
+   
    ```csharp
    // 你必须以正确的顺序指定分析器, 否则就会这样:
    CommandObject<AppCommand> myCmds = new CommandObject<AppCommand>();

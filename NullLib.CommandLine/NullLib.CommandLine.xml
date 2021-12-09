@@ -645,7 +645,7 @@
             Try to parse an Argument from commandline segments
             </summary>
             <param name="index">Current index</param>
-            <param name="segments">Source segments</param>
+            <param name="arguments">Source segments</param>
             <param name="result">Result Argument</param>
             <returns>If this parsing was successed</returns>
         </member>

@@ -22,11 +22,4 @@
     <DocumentationFile>C:\Users\SlimeNull\source\repos\NullLib.CommandLine\NullLib.CommandLine\NullLib.CommandLine.xml</DocumentationFile>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Include="..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
-
 </Project>

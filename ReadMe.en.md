@@ -2,7 +2,9 @@
 
 Easily calling methods defined in C# with a command string.
 
-## Usage 
+More information about using this Library, see [Manual](./Manual.en.md)
+
+## Usage
 
 First of all, the basic type in **NullLib.CommandLine** for calling methods is `CommandObject`, it contains methods' information, such as `MethodInfo`, `ParameterInfo`, and attributes.
 
@@ -40,7 +42,7 @@ class Program
             if (!AppCommandObject.TryExecuteCommand(cmdline, out var result))
             {
                 if (result != null)             // if a method has no return value, then result is null.
-	                Console.WriteLine(result);
+                    Console.WriteLine(result);
             }
             else
             {
@@ -135,10 +137,10 @@ public class MyCommand
 {
     [CommandHost]   // Add CommandHost Attribute for CommandObject Property member to use 'Nested Commands'
     public CommandObject<MathCommand> Math { get; } = new();   // 实例化成员
-    
+
     [Command]
     public string Hello() => "Hello, world.";
-    
+
     public class MathCommand
     {
         // implement Plus command in nested commands
@@ -174,7 +176,7 @@ class MyCommands : CommandHome  // Inherit from CommandHome
     public void Hello()
     {
         Console.WriteLine(CommandObject.GenCommandOverviewText());  // Use the CommandObject property of CommandHome
-        
+
         // If there is not CommandObject is using the current instance, it will returns null
     }
 }
@@ -186,45 +188,39 @@ Change the escape char for your program
 CommandParser.EscapeChar = '^';  // Change escape char to '^' (default is '`')
 ```
 
-
-
-
-
 ## Types
 
 1. CommandAttribute:
-
+   
    Method that can be execute by command string must has a `CommandAttribute`
 
 2. CommandObject:
-
+   
    Class for invoking methods by command string.
 
 3. CommandInvoker:
-
+   
    Helps invoking methods by `IArguments`.
 
 4. CommandParser:
-
+   
    Helps to parse a command string for method calling.
 
 5. ArguConverter:
-
+   
    Implemented `IArguConverter` interface, abstract class, should be inherited by custom Converter.
 
 6. ArguConverterManager:
-
+   
    Helps create `ArguConverter` rapidly.
 
 7. CommandLineSegment:
-
+   
    Component of command line string.
 
 8. ArguParser:
-
+   
    Helps parse `CommandLineSegment` to `IArgument`
-
-
 
 ## CommandLineSegment
 
@@ -238,57 +234,51 @@ For example, in `myprogram param1 "param2"`, there is three CommandLineSegment:
 
 To split a command line string to CommandLineSegment[], use `CommandParser.SplitCommandLine(string str)`
 
-
-
 ## Argument
 
 Argument of command, can have a name, implemented `IArgument`, when invoking method, will be passed.
-
-
 
 ## ArguParser
 
 Here is all build-in `ArguParsers`:
 
 1. ArguParser:
-
-   It can parse any segment as an Argument.
    
-2. IdentifierArguParser:
+   It can parse any segment as an Argument.
 
+2. IdentifierArguParser:
+   
    It can parse an identifier segment as an `Argument`. The corresponding regex string is *"{A-Za-z\_}{A-Za-z0-9\_}\*"*
 
 3. StringArguParser:
-
+   
    It can parse any segments as an `Argument`, but the segment must be `Quoted`.
 
 4. FieldArguParser:
-
+   
    It can parse a segment like <u>*name=value*</u> or two segments like <u>*name= value*</u> to a `Argument`, also, you can specify the separator, default is '='.
 
 5. PropertyArguParser:
-
+   
    It can parse two segments like <u>*-name value*</u> to a `Argument`, and you can also specify the start string of <u>*name*</u>, default is "-".
-
-
 
 ## ArguConverter
 
 Here is all build-in `ArguConverter`:
 
 1. ArguConverter:
-
+   
    The default `ArguConverter` which returns the source value without any conversion
 
 2. BoolArguConverter:
-
+   
    Helps convert to bool, for source value, if it's "true", then return true, if it's "false", then return false, otherwise, convert failed. (Cases is ignored).
 
 3. CharArguConverter:
-
+   
    Helps convert to char, only when source string has one char, returns the char, otherwise, convert failed.
 
-4.   ByteArguConverter:
+4. ByteArguConverter:
 
 5. ShortArguConverter:
 
@@ -303,21 +293,20 @@ Here is all build-in `ArguConverter`:
 10. BigIntArguConverter:
 
 11. DecimalArguConverter:
-
+    
     The converters mentioned above all returns the corresponding number type, and all calls `Parse` and `TryParse` method of corresponding number type.
 
 12. EnumArguConverter&lt;T&gt;:
-
+    
     Helps convert to `Enum` type. T should specified a `Enum` type. It can convert from a name or number value of `Enum` type.
 
 13. ForeachArguConverter&lt;TConverter&gt;:
-
+    
     Helps convert to Array, only used for variable-length parameter (decorated by `params`), `TConverter` must implement `IArguConverter`, each value of source string array will be converted by the specified Converter.
 
 14. CharArrayArguConverter:
-
+    
     Helps convert to char array, it calls `string.ToCharArray()` to do conversion.
-
 
 ## About ArguParser
 
@@ -359,12 +348,10 @@ So, if you inherit `ArguConverterBase<T>`, you just need to override these two m
 
 1. Do NOT create a `ArguConverter` with new expression, use `ArguConverterManager.GetConverter<T>()`.
 
-
-
 ## FAQ
 
 1. When I calling `CommandObject.ExecuteCommand(IArguParser[] parsers, string cmdline)`, but some of parsers don't work:
-
+   
    ```csharp
    // you must specify parsers in a correct order, or it will like this:
    CommandObject<AppCommands> myCmds = new CommandObject<AppCommands>();
@@ -375,4 +362,3 @@ So, if you inherit `ArguConverterBase<T>`, you just need to override these two m
        new PropertyArguParser()         // so you should place ArguParser as the last parser.
    }, Console.ReadLine());
    ```
-

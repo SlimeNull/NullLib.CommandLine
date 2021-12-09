@@ -7,6 +7,32 @@ namespace NullLib.CommandLine
 {
     public static class CommandInvoker
     {
+        /// <summary>
+        /// Used for auto select ArguConverter(s) for Command argument convertion.
+        /// </summary>
+        public static List<IArguConverter> AutoArguConverters { get; } = new List<IArguConverter>();
+
+        public static IArguConverter[] GetDefaultAutoArguConverters()
+        {
+            return new IArguConverter[]
+            {
+                ArguConverterManager.GetConverter<ArguConverter>(),
+                ArguConverterManager.GetConverter<BoolArguConverter>(),
+                ArguConverterManager.GetConverter<ByteArguConverter>(),
+                ArguConverterManager.GetConverter<CharArguConverter>(),
+                ArguConverterManager.GetConverter<ShortArguConverter>(),
+                ArguConverterManager.GetConverter<IntArguConverter>(),
+                ArguConverterManager.GetConverter<LongArguConverter>(),
+                ArguConverterManager.GetConverter<FloatArguConverter>(),
+                ArguConverterManager.GetConverter<DoubleArguConverter>(),
+                ArguConverterManager.GetConverter<BigIntArguConverter>(),
+                ArguConverterManager.GetConverter<DecimalArguConverter>(),
+                ArguConverterManager.GetConverter<CharArrayArguConverter>(),
+
+            };
+        }
+
+
         #region PreProcess
         private static bool IsVarlenMethod(CommandArguAttribute[] paramInfos)
         {

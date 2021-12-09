@@ -181,7 +181,7 @@ namespace NullLib.CommandLine
 
         public virtual string ConvertBack(object obj)
         {
-            return obj.ToString();
+            return obj?.ToString();
         }
 
         public virtual bool TryConvert(string argu, out object result)

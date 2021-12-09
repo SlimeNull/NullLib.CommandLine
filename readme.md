@@ -3,26 +3,28 @@
 ## Index / 索引
 
 1. This document has two version, English and Chinese.
-
+   
    这个文档有两个版本, 英文和中文.
 
 2. The following content is English version, to read Chinese version, scroll down.
-
+   
    下面的是英文版本, 如果要阅读中文版本, 请往下翻.
 
 3. To read whole document, open file in source repository which name like "readme.language.md". readme.en-us.md for English
-
-   这不是全部, 阅读完整版文档, 请打开源仓库中名字像 "readme.语言.md" 的文件. 例如, 中文文档是 readme.zh-cn.md
    
-4. For more information, go to [Github](https://github.com/SlimeNull/NullLib.CommandLine)
+   这不是全部, 阅读完整版文档, 请打开源仓库中名字像 "readme.语言.md" 的文件. 例如, 中文文档是 readme.zh-cn.md
 
+4. For more information, go to [Github](https://github.com/SlimeNull/NullLib.CommandLine)
+   
    更多信息, 请转到 [Github](https://github.com/SlimeNull/NullLib.CommandLine)
 
 ## EN-US
 
 Easily calling methods defined in C# with a command string.
 
-### Usage 
+More information about using this Library, see [Manual](./Manual.en.md)
+
+### Usage
 
 First of all, the basic type in **NullLib.CommandLine** for calling methods is `CommandObject`, it contains methods' information, such as `MethodInfo`, `ParameterInfo`, and attributes.
 
@@ -60,7 +62,7 @@ class Program
             if (!AppCommandObject.TryExecuteCommand(cmdline, out var result))
             {
                 if (result != null)             // if a method has no return value, then result is null.
-	                Console.WriteLine(result);
+                    Console.WriteLine(result);
             }
             else
             {
@@ -150,7 +152,9 @@ False
 
 通过命令行字符串来方便快捷的调用 C# 中定义的方法
 
-### 使用方式 
+更多关于此库的使用方式, 见 [用户手册](./Manual.zh.md)
+
+### 使用方式
 
 首先, 在 **NullLib.CommandLine** 中用于调用方法的最基本类型是 `CommandObject`, 它包含了方法的各种信息, 例如 `MethodInfo`, `ParameterInfo`, 以及属性.
 
@@ -188,7 +192,7 @@ class Program
             if (!AppCommandObject.TryExecuteCommand(cmdline, out var result))
             {
                 if (result != null)             // 如果一个方法没有返回值, 则结果是 null.
-	                Console.WriteLine(result);
+                    Console.WriteLine(result);
             }
             else
             {
@@ -267,7 +271,7 @@ Now input commands.
 >>> Sum 1 2 3 4
 10
 >>> Print "一些文本`t转义字符也是受支持的"
-一些文本	转义字符也是受支持的
+一些文本    转义字符也是受支持的
 >>> StringEquals qwq awa
 False
 >>> SetBackground White
