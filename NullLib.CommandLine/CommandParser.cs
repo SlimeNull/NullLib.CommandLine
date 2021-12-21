@@ -33,13 +33,13 @@ namespace NullLib.CommandLine
         private static char escapeChar = '`';
 
         /// <summary>
-        /// EscapeChar for string parsing, defualt is '\\'
+        /// EscapeChar for string parsing, defualt is '`'
         /// </summary>
         public static char EscapeChar { get => escapeChar; set => escapeChar = value; }
         /// <summary>
         /// Default parsers for parse commandline string.
         /// </summary>
-        public static IArguParser[] DefaultParsers { get; private set; } = new IArguParser[]
+        public static IArguParser[] DefaultParsers { get; } = new IArguParser[]
         {
             new FieldArguParser(),
             new ArguParser()

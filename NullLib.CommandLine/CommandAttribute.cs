@@ -14,8 +14,8 @@ namespace NullLib.CommandLine
     [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
     public sealed class CommandAttribute : Attribute
     {
-        readonly bool autoSelectConverters;
-        readonly IArguConverter[] arguConverters;
+        bool autoSelectConverters;
+        IArguConverter[] arguConverters;
 
         /// <summary>
         /// ArgumentConverters for current command
@@ -36,8 +36,7 @@ namespace NullLib.CommandLine
         /// <param name="arguConverters"></param>
         public CommandAttribute(params Type[] arguConverters)
         {
-            
-            try
+                try
             {
                 if (arguConverters == null)
                 {
@@ -60,6 +59,14 @@ namespace NullLib.CommandLine
         {
             if (CommandName == null)
                 CommandName = info.Name;
+
+            if (autoSelectConverters)
+            {
+                ParameterInfo[] parameterInfos = info.GetParameters();
+                arguConverters = new IArguConverter[parameterInfos.Length];
+                for (int i = 0; i < parameterInfos.Length; i++)
+                    arguConverters[i] = ArguConverterManager.GetConverter(CommandInvoker.GetArguConverter(parameterInfos[i].ParameterType));
+            }
         }
 
         /// <summary>

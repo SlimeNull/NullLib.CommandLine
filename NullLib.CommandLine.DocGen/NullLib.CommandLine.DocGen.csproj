@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>$(MSBuildProjectName).Replace(" ", "_")</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NullLib.CommandLine" Version="1.1.0.2" />
+    <PackageReference Include="NullLib.ConsoleEx" Version="1.0.4.3" />
+  </ItemGroup>
+
+</Project>

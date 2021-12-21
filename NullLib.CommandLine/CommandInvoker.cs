@@ -1,36 +1,100 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Reflection;
 
 namespace NullLib.CommandLine
 {
     public static class CommandInvoker
     {
-        /// <summary>
-        /// Used for auto select ArguConverter(s) for Command argument convertion.
-        /// </summary>
-        public static List<IArguConverter> AutoArguConverters { get; } = new List<IArguConverter>();
-
-        public static IArguConverter[] GetDefaultAutoArguConverters()
+        public static Dictionary<Type, Type> ArguConverterMap { get; } = new Dictionary<Type, Type>()
         {
-            return new IArguConverter[]
-            {
-                ArguConverterManager.GetConverter<ArguConverter>(),
-                ArguConverterManager.GetConverter<BoolArguConverter>(),
-                ArguConverterManager.GetConverter<ByteArguConverter>(),
-                ArguConverterManager.GetConverter<CharArguConverter>(),
-                ArguConverterManager.GetConverter<ShortArguConverter>(),
-                ArguConverterManager.GetConverter<IntArguConverter>(),
-                ArguConverterManager.GetConverter<LongArguConverter>(),
-                ArguConverterManager.GetConverter<FloatArguConverter>(),
-                ArguConverterManager.GetConverter<DoubleArguConverter>(),
-                ArguConverterManager.GetConverter<BigIntArguConverter>(),
-                ArguConverterManager.GetConverter<DecimalArguConverter>(),
-                ArguConverterManager.GetConverter<CharArrayArguConverter>(),
+            { typeof(bool), typeof(BoolArguConverter) },
+            { typeof(byte), typeof(ByteArguConverter) },
+            { typeof(short), typeof(ShortArguConverter) },
+            { typeof(int), typeof(IntArguConverter) },
+            { typeof(long), typeof(LongArguConverter) },
+            { typeof(uint), typeof(UIntArguConverter) },
+            { typeof(ulong), typeof(ULongArguConverter) },
+            { typeof(float), typeof(FloatArguConverter) },
+            { typeof(double), typeof(DoubleArguConverter) },
+            { typeof(char), typeof(CharArguConverter) },
+            { typeof(string), typeof(ArguConverter) },
+            { typeof(char[]), typeof(CharArrayArguConverter) },
+            { typeof(decimal), typeof(DecimalArguConverter) },
+            { typeof(BigInteger), typeof(BigIntArguConverter) },
+        };
 
-            };
+        public static bool TryGetArguConverter(Type arguType, out Type arguConverter)
+        {
+            foreach(Func<Type, Type> getter in ArguConverterPipline)
+            {
+                arguConverter = getter(arguType);
+                if (arguConverter != null)
+                    return true;
+            }
+
+            arguConverter = null;
+            return false;
         }
+
+        public static Type GetArguConverter(Type arguType)
+        {
+            Type arguConverter = null;
+            foreach (Func<Type, Type> getter in ArguConverterPipline)
+            {
+                arguConverter = getter(arguType);
+                if (arguConverter != null)
+                    return arguConverter;
+            }
+
+            throw new CommandArgumentConverterNotFoundException(arguType);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="arguType">Command argument type</param>
+        /// <returns>IArguConverter instance, null if not found or other exception</returns>
+        public static Type GetArguConverterFromMap(Type arguType)
+        {
+            if (ArguConverterMap.TryGetValue(arguType, out var converterType))
+            {
+                return converterType;
+            }
+
+            return null;
+        }
+        public static Type GetConverterForEnum(Type enumArguType)
+        {
+            if (enumArguType.IsEnum)
+            {
+                return typeof(EnumArguConverter<>).MakeGenericType(enumArguType);
+            }
+
+            return null;
+        }
+        public static Type GetConverterForArray(Type arrayArguType)
+        {
+            if (arrayArguType.IsArray)
+            {
+                Type arrayElementType = arrayArguType.GetElementType();
+                if (TryGetArguConverter(arrayElementType, out Type arrayElementConverterType))
+                {
+                    return typeof(ForeachArguConverter<>).MakeGenericType(arrayElementConverterType);
+                }
+            }
+
+            return null;
+        }
+
+        public static List<Func<Type, Type>> ArguConverterPipline { get; } = new List<Func<Type, Type>>()
+        {
+            GetArguConverterFromMap,
+            GetConverterForEnum,
+            GetConverterForArray,
+        };
 
 
         #region PreProcess

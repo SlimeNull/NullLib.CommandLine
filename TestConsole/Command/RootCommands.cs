@@ -14,7 +14,8 @@ namespace TestConsole
                 [CommandHost]
                 public CommandObject<FuckCommand> Fuck { get; } = new CommandObject<FuckCommand>();
 
-                [Command(typeof(FloatArguConverter), typeof(FloatArguConverter), Description = "")]      // the build-in ArgumentConverter in NullLib.CommandLine
+                //[Command(typeof(FloatArguConverter), typeof(FloatArguConverter), Description = "")]      // the build-in ArgumentConverter in NullLib.CommandLine
+                [Command]
                 public float Plus(float a, float b)
                 {
                     return a + b;
@@ -110,7 +111,7 @@ namespace TestConsole
             {
                 Console.WriteLine(this.CommandObject.GenCommandOverviewText());
             }
-            [Command]
+            [Command(typeof(ArguConverter))]
             public void Help(string cmdname)
             {
                 Console.WriteLine(CommandObject.GenCommandDetailsText(cmdname, StringComparison.OrdinalIgnoreCase));

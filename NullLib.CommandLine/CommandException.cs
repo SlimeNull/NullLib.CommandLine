@@ -78,4 +78,13 @@ namespace NullLib.CommandLine
             argument = argu;
         }
     }
+    public class CommandArgumentConverterNotFoundException : CommandException
+    {
+        public Type ParameterType { get; }
+
+        public CommandArgumentConverterNotFoundException(Type parameterType) : base("Command argument converter not found.")
+        {
+            ParameterType = parameterType;
+        }
+    }
 }

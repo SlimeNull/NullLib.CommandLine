@@ -195,6 +195,16 @@
             Long converter, convert by long.Parse and long.TryParse
             </summary>
         </member>
+        <member name="T:NullLib.CommandLine.UIntArguConverter">
+            <summary>
+            UInt converter, convert by uint.Parse and uint.TryParse
+            </summary>
+        </member>
+        <member name="T:NullLib.CommandLine.ULongArguConverter">
+            <summary>
+            ULong converter, convert by ulong.Parse and ulong.TryParse
+            </summary>
+        </member>
         <member name="T:NullLib.CommandLine.FloatArguConverter">
             <summary>
             Float converter, convert by float.Parse and float.TryParse
@@ -420,6 +430,13 @@
             <summary>
             Get the CommandObject which is controlling current instance
             </summary>
+        </member>
+        <member name="M:NullLib.CommandLine.CommandInvoker.GetArguConverterFromMap(System.Type)">
+            <summary>
+            
+            </summary>
+            <param name="arguType">Command argument type</param>
+            <returns>IArguConverter instance, null if not found or other exception</returns>
         </member>
         <member name="T:NullLib.CommandLine.CommandObject">
             <summary>
@@ -656,7 +673,7 @@
         </member>
         <member name="P:NullLib.CommandLine.CommandParser.EscapeChar">
             <summary>
-            EscapeChar for string parsing, defualt is '\\'
+            EscapeChar for string parsing, defualt is '`'
             </summary>
         </member>
         <member name="P:NullLib.CommandLine.CommandParser.DefaultParsers">

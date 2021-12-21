@@ -425,6 +425,34 @@ namespace NullLib.CommandLine
         }
     }
     /// <summary>
+    /// UInt converter, convert by uint.Parse and uint.TryParse
+    /// </summary>
+    public class UIntArguConverter : ArguConverterBase<uint>
+    {
+        public override uint Convert(string argu)
+        {
+            return uint.Parse(argu);
+        }
+        public override bool TryConvert(string argu, out uint result)
+        {
+            return uint.TryParse(argu, out result);
+        }
+    }
+    /// <summary>
+    /// ULong converter, convert by ulong.Parse and ulong.TryParse
+    /// </summary>
+    public class ULongArguConverter : ArguConverterBase<ulong>
+    {
+        public override ulong Convert(string argu)
+        {
+            return ulong.Parse(argu);
+        }
+        public override bool TryConvert(string argu, out ulong result)
+        {
+            return ulong.TryParse(argu, out result);
+        }
+    }
+    /// <summary>
     /// Float converter, convert by float.Parse and float.TryParse
     /// </summary>
     public class FloatArguConverter : ArguConverterBase<float>

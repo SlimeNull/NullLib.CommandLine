@@ -7,6 +7,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using NullLib.ArgsParser;
 using NullLib.CommandLine;
+using System.CommandLine;
+using System.CommandLine.Invocation;
+using System.CommandLine.Binding;
 
 namespace TestConsole
 {
@@ -40,6 +43,20 @@ namespace TestConsole
 
         static void Main(string[] args)
         {
+            var rootCmd = new RootCommand()
+            {
+                new Option<string>("--fuck-option"),
+            };
+
+            rootCmd.SetHandler<string>(NewMethod);
+
+            while (true)
+            {
+                CommandParser.SplitCommandLine(Console.ReadLine(), out var fuck);
+                rootCmd.Invoke(fuck.Select(v => v.Content).ToArray());
+            }
+
+
             CommandObject<MyCommands> obj = new();       // 创建一个命令行对象
             IArguParser[] parsers = new IArguParser[]
             {
@@ -53,6 +70,13 @@ namespace TestConsole
                 if (_e.CommandName != "FFF")
                     _e.Handled = true;
             };
+
+            if (args.Length > 0)
+            {
+                CommandParser.SplitCommandLineFromStartupArgs(out CommandSegment[] rst);
+                obj.ExecuteCommand(rst);
+
+            }
 
             Console.WriteLine("Easy command. Copyright 2021 Null.\n");
             while (true)
@@ -70,23 +94,28 @@ namespace TestConsole
                 try
                 {
                     var result = obj.ExecuteCommand(parsers, cmdline, true);
-                    if(result != null)
+                    if (result != null)
                         Console.WriteLine(result);
                 }
-                catch(CommandException)
+                catch (CommandException)
                 {
                     Console.Error.WriteLine("Syntax error: can't execute command.");
                 }
-                catch(TargetInvocationException)
+                catch (TargetInvocationException)
                 {
                     Console.Error.WriteLine("Method error: exception thrown when execute method.");
                 }
-                catch(Exception)
+                catch (Exception)
                 {
                     Console.Error.WriteLine("Unexpected exception");
                 }
 #endif
             }
+        }
+
+        private static void NewMethod(string fuckOption)
+        {
+            Console.WriteLine(fuckOption);
         }
     }
 }
