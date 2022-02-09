@@ -118,7 +118,8 @@ namespace NullLib.CommandLine
         /// <summary>
         /// Global converter storage
         /// </summary>
-        public static Dictionary<Type, IArguConverter> AllConverters { get; } = new Dictionary<Type, IArguConverter>();
+        public static Dictionary<Type, IArguConverter> AllConverters { get; }
+            = new Dictionary<Type, IArguConverter>();
 
         /// <summary>
         /// Get from global storage or initialize a converter

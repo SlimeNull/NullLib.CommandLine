@@ -10,14 +10,16 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4DC75307-ECC3-450C-BA75-F608FD2C43DD}"
 	ProjectSection(SolutionItems) = preProject
 		LICENSE = LICENSE
-		readme.en-us.md = readme.en-us.md
+		Manual.en.md = Manual.en.md
+		Manual.zh.md = Manual.zh.md
+		ReadMe.en.md = ReadMe.en.md
 		readme.md = readme.md
-		readme.zh-cn.md = readme.zh-cn.md
+		ReadMe.zh.md = ReadMe.zh.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NullLib.CommandLine.DocGen", "NullLib.CommandLine.DocGen\NullLib.CommandLine.DocGen.csproj", "{33DB6A00-6A03-4769-A4C9-7398EA403131}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.CommandLine.Execution", "System.CommandLine.Execution\System.CommandLine.Execution.csproj", "{0FCDCC48-A510-4B7D-BEF9-16C45B7CE422}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.CommandLine.Execution", "System.CommandLine.Execution\System.CommandLine.Execution.csproj", "{0FCDCC48-A510-4B7D-BEF9-16C45B7CE422}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

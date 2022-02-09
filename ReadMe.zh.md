@@ -39,7 +39,7 @@ class Program
         {
             Console.Write(">>> ");          // 提示符
             string cmdline = Console.ReadLine();
-            if (!AppCommandObject.TryExecuteCommand(cmdline, out var result))
+            if (AppCommandObject.TryExecuteCommand(cmdline, out var result))
             {
                 if (result != null)             // 如果一个方法没有返回值, 则结果是 null.
                     Console.WriteLine(result);

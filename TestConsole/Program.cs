@@ -35,12 +35,6 @@ namespace TestConsole
     }
     partial class Program
     {
-        static Program()
-        {
-            CommandParser.EscapeChar = '`';
-            Console.WriteLine("QWQAWAQWQAWAWQWQ".CountSubstring("QWQ"));
-        }
-
         static void Main(string[] args)
         {
             var rootCmd = new RootCommand()

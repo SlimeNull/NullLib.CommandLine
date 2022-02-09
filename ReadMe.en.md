@@ -39,7 +39,7 @@ class Program
         {
             Console.Write(">>> ");          // prompt
             string cmdline = Console.ReadLine();
-            if (!AppCommandObject.TryExecuteCommand(cmdline, out var result))
+            if (AppCommandObject.TryExecuteCommand(cmdline, out var result))
             {
                 if (result != null)             // if a method has no return value, then result is null.
                     Console.WriteLine(result);
