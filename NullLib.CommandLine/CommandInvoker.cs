@@ -8,6 +8,9 @@ namespace NullLib.CommandLine
 {
     public static class CommandInvoker
     {
+        /// <summary>
+        /// Map from target type to converter type.
+        /// </summary>
         public static Dictionary<Type, Type> ArguConverterMap { get; } = new Dictionary<Type, Type>()
         {
             { typeof(bool), typeof(BoolArguConverter) },

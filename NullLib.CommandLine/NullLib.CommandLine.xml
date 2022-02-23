@@ -431,6 +431,11 @@
             Get the CommandObject which is controlling current instance
             </summary>
         </member>
+        <member name="P:NullLib.CommandLine.CommandInvoker.ArguConverterMap">
+            <summary>
+            Map from target type to converter type.
+            </summary>
+        </member>
         <member name="M:NullLib.CommandLine.CommandInvoker.GetArguConverterFromMap(System.Type)">
             <summary>
             

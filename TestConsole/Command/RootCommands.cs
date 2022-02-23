@@ -78,7 +78,7 @@ namespace TestConsole
                 EQ, NE, GT, LT, GE, LE, ET
             }
 
-            [Command(typeof(ForeachArguConverter<FloatArguConverter>), Description = "计算指定数字的总和")]   // each string of array will be converted by FloatConverter
+            [Command(Description = "计算指定数字的总和")]   // each string of array will be converted by FloatConverter
             public float Sum(
                 [CommandArgu("要计算的数字")]
                 params float[] nums)                 // variable length parameter method is supported
@@ -89,7 +89,7 @@ namespace TestConsole
                 return result;
             }
 
-            [Command(typeof(ArguConverter))]        // if don't need to do any convertion, specify an 'ArgumentConverter'
+            [Command]        // if don't need to do any convertion, specify an 'ArgumentConverter'
             public void Print(string txt)
             {
                 // 在这里, 这个方法有一个 Command 特性, 我有没有办法在这个方法体内直接获得这个特性的实例?

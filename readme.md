@@ -90,7 +90,7 @@ Now input commands.
 Hello world!
 ```
 
-To pass parameters to method, specify `ArgumentConverter` for each parameter.
+At before, to pass parameters to method, you must specify `ArgumentConverter` for each parameter.
 
 Let's add these methods to `AppCommands`
 
@@ -134,6 +134,14 @@ public void SetBackground(ConsoleColor color)
     Console.BackgroundColor = color;
 }
 ```
+
+But now, you can just specify `Command` attribute for your method. and automatically check the corresponding converter. Just like this:
+
+```csharp
+[Command]
+public int Plus(int a, int b) => a + b;
+```
+
 
 Run and input:
 
@@ -220,7 +228,7 @@ Now input commands.
 Hello world!
 ```
 
-为每一个参数指定 `ArgumentConverter` 以传递参数到方法.
+在之前的版本, 你需要为每一个参数指定 `ArgumentConverter` 以传递参数到方法.
 
 那么, 我们再试试将这些方法添加到 `AppCommands` 中
 
@@ -265,7 +273,9 @@ public void SetBackground(ConsoleColor color)
 }
 ```
 
-Run and input:
+但是现在, 我们只需要指定一个 `Command` 特性即可, 对应的转换器将会自动检查.
+
+运行并输入:
 
 ```txt
 Now input commands.
