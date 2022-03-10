@@ -38,7 +38,7 @@ namespace NullLib.CommandLine
 
         private void InitializeInstance()
         {
-            CommandObjectManager.GetCommandObjectInfo(instanceType, out methods, out paramInfos, out commandHosts, out cmdAttrs, out paramAttrs, out commandHostAttrs);
+            CommandObjectManager.GetInfo(instanceType, out methods, out paramInfos, out commandHosts, out cmdAttrs, out paramAttrs, out commandHostAttrs);
         }
         private void OnCommandUnresolved(CommandUnResolvedEventArgs args)
         {
@@ -507,7 +507,7 @@ namespace NullLib.CommandLine
         /// <param name="methodAttributes"></param>
         /// <param name="paramAttributes"></param>
         /// <param name="commandHostAttributes"></param>
-        public static void GetCommandObjectInfo(Type type,
+        public static void GetInfo(Type type,
             out MethodInfo[] methods, out ParameterInfo[][] paramInfos, out PropertyInfo[] commandHosts,
             out CommandAttribute[] methodAttributes, out CommandArguAttribute[][] paramAttributes, out CommandHostAttribute[] commandHostAttributes)
         {
@@ -522,7 +522,7 @@ namespace NullLib.CommandLine
             }
             else
             {
-                NewCommandObjectInfo(type, out methods, out paramInfos, out commandHosts, out methodAttributes, out paramAttributes, out commandHostAttributes);
+                CreateInfo(type, out methods, out paramInfos, out commandHosts, out methodAttributes, out paramAttributes, out commandHostAttributes);
                 cmdObjInfos[type] = new CommandObjectInfo(methods, paramInfos, commandHosts, methodAttributes, paramAttributes, commandHostAttributes);
             }
         }
@@ -536,7 +536,7 @@ namespace NullLib.CommandLine
         /// <param name="methodAttributes"></param>
         /// <param name="paramAttributes"></param>
         /// <param name="commandHostAttributes"></param>
-        public static void NewCommandObjectInfo(Type type,
+        public static void CreateInfo(Type type,
             out MethodInfo[] methods, out ParameterInfo[][] paramInfos, out PropertyInfo[] commandHosts,
             out CommandAttribute[] methodAttributes, out CommandArguAttribute[][] paramAttributes, out CommandHostAttribute[] commandHostAttributes)
         {

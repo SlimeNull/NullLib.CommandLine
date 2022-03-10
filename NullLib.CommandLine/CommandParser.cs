@@ -53,7 +53,7 @@ namespace NullLib.CommandLine
         /// <returns>Splitting result</returns>
         public static void SplitCommandLine(string str, out CommandSegment[] result)
         {
-            List<CommandSegment> rstBulder = new();
+            List<CommandSegment> rstBuilder = new();
             StringBuilder temp = new();
             bool escape = false, quote = false;
 
@@ -86,7 +86,7 @@ namespace NullLib.CommandLine
                         {
                             if (i == '"')
                             {
-                                rstBulder.Add(new CommandSegment(temp.ToString(), true));
+                                rstBuilder.Add(new CommandSegment(temp.ToString(), true));
                                 temp.Clear();
 
                                 quote = false;
@@ -102,7 +102,7 @@ namespace NullLib.CommandLine
                             {
                                 if (temp.Length > 0)
                                 {
-                                    rstBulder.Add(new CommandSegment(temp.ToString(), false));
+                                    rstBuilder.Add(new CommandSegment(temp.ToString(), false));
                                     temp.Clear();
                                 }
 
@@ -112,7 +112,7 @@ namespace NullLib.CommandLine
                             {
                                 if (temp.Length > 0)
                                 {
-                                    rstBulder.Add(new CommandSegment(temp.ToString(), false));
+                                    rstBuilder.Add(new CommandSegment(temp.ToString(), false));
                                     temp.Clear();
                                 }
                             }
@@ -126,9 +126,9 @@ namespace NullLib.CommandLine
             }
 
             if (temp.Length > 0)
-                rstBulder.Add(new CommandSegment(temp.ToString(), quote));
+                rstBuilder.Add(new CommandSegment(temp.ToString(), quote));
 
-            result = rstBulder.ToArray();
+            result = rstBuilder.ToArray();
         }
 
         public static void SplitCommandLineFromStartupArgs(out CommandSegment[] result)

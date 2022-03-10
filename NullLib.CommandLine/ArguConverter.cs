@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
-using System.Globalization;
 using System.Text;
-using System.Reflection;
 
 namespace NullLib.CommandLine
 {
@@ -228,18 +226,12 @@ namespace NullLib.CommandLine
 
         public virtual bool IgnoreCases { get; set; }
 
-        public virtual TTarget Convert(string argu)
-        {
-            return default;
-        }
+        public abstract TTarget Convert(string argu);
+        public abstract string ConvertBack(TTarget obj);
+
         public virtual TTarget Convert(object argu)
         {
             return Convert(argu?.ToString());
-        }
-
-        public virtual string ConvertBack(TTarget obj)
-        {
-            return obj.ToString();
         }
         public virtual string ConvertBack(object obj)
         {
@@ -309,10 +301,18 @@ namespace NullLib.CommandLine
         }
     }
 
+    public abstract class BasicTypeArguConverterBase<TTarget> : ArguConverterBase<TTarget>
+    {
+        public override string ConvertBack(TTarget obj)
+        {
+            return obj == null ? obj.ToString() : null;
+        }
+    }
+
     /// <summary>
     /// Default converter, return value without any conversion
     /// </summary>
-    public class ArguConverter : ArguConverterBase<string>
+    public class ArguConverter : BasicTypeArguConverterBase<string>
     {
         public override string Convert(string argu)
         {
@@ -328,7 +328,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Bool converter, return true if "true", false if "false", otherwise, convert failed
     /// </summary>
-    public class BoolArguConverter : ArguConverterBase<bool>
+    public class BoolArguConverter : BasicTypeArguConverterBase<bool>
     {
         public override bool Convert(string argu)
         {
@@ -342,7 +342,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Byte convert, convert by byte.Parse and byte.TryParse
     /// </summary>
-    public class ByteArguConverter : ArguConverterBase<byte>
+    public class ByteArguConverter : BasicTypeArguConverterBase<byte>
     {
         public override byte Convert(string argu)
         {
@@ -356,7 +356,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Char convert, if string has only one char, then return it, otherwise, convert failed
     /// </summary>
-    public class CharArguConverter : ArguConverterBase<char>
+    public class CharArguConverter : BasicTypeArguConverterBase<char>
     {
         public override char Convert(string argu)
         {
@@ -386,7 +386,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Short converter, convert by short.Parse and short.TryParse
     /// </summary>
-    public class ShortArguConverter : ArguConverterBase<short>
+    public class ShortArguConverter : BasicTypeArguConverterBase<short>
     {
         public override short Convert(string argu)
         {
@@ -400,7 +400,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Int converter, convert by int.Parse and int.TryParse
     /// </summary>
-    public class IntArguConverter : ArguConverterBase<int>
+    public class IntArguConverter : BasicTypeArguConverterBase<int>
     {
         public override int Convert(string argu)
         {
@@ -414,7 +414,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Long converter, convert by long.Parse and long.TryParse
     /// </summary>
-    public class LongArguConverter : ArguConverterBase<long>
+    public class LongArguConverter : BasicTypeArguConverterBase<long>
     {
         public override long Convert(string argu)
         {
@@ -428,7 +428,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// UInt converter, convert by uint.Parse and uint.TryParse
     /// </summary>
-    public class UIntArguConverter : ArguConverterBase<uint>
+    public class UIntArguConverter : BasicTypeArguConverterBase<uint>
     {
         public override uint Convert(string argu)
         {
@@ -442,7 +442,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// ULong converter, convert by ulong.Parse and ulong.TryParse
     /// </summary>
-    public class ULongArguConverter : ArguConverterBase<ulong>
+    public class ULongArguConverter : BasicTypeArguConverterBase<ulong>
     {
         public override ulong Convert(string argu)
         {
@@ -456,7 +456,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Float converter, convert by float.Parse and float.TryParse
     /// </summary>
-    public class FloatArguConverter : ArguConverterBase<float>
+    public class FloatArguConverter : BasicTypeArguConverterBase<float>
     {
         public override float Convert(string argu)
         {
@@ -470,7 +470,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Double converter, convert by double.Parse and double.TryParse
     /// </summary>
-    public class DoubleArguConverter : ArguConverterBase<double>
+    public class DoubleArguConverter : BasicTypeArguConverterBase<double>
     {
         public override double Convert(string argu)
         {
@@ -484,7 +484,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// BigInt converter, convert by BigInteger.Parse and BigInteger.TryParse
     /// </summary>
-    public class BigIntArguConverter : ArguConverterBase<BigInteger>
+    public class BigIntArguConverter : BasicTypeArguConverterBase<BigInteger>
     {
         public override BigInteger Convert(string argu)
         {
@@ -498,7 +498,7 @@ namespace NullLib.CommandLine
     /// <summary>
     /// Decimal converter, convert by Decimal.Parse and Decimal.TryParse
     /// </summary>
-    public class DecimalArguConverter : ArguConverterBase<decimal>
+    public class DecimalArguConverter : BasicTypeArguConverterBase<decimal>
     {
         public override decimal Convert(string argu)
         {
@@ -513,7 +513,7 @@ namespace NullLib.CommandLine
     /// Enum converter, convert by Enum.Parse and Enum.TryParse
     /// </summary>
     /// <typeparam name="T">Enum type</typeparam>
-    public class EnumArguConverter<T> : ArguConverterBase<T> where T : struct
+    public class EnumArguConverter<T> : BasicTypeArguConverterBase<T> where T : struct
     {
         public override T Convert(string argu)
         {
@@ -619,6 +619,81 @@ namespace NullLib.CommandLine
         {
             return argu.ToCharArray();
         }
-        // do not need to override TryConvert
+        public override string ConvertBack(char[] obj)
+        {
+            return new string(obj);
+        }
+    }
+
+    public class HexBytesArguConverter : ArguConverterBase<byte[]>
+    {
+        static bool TryHexToBytes(string hex, out byte[] bytes)
+        {
+            if (hex.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+                hex = hex.Substring(2);
+
+            if (hex.Length % 2 != 0)
+            {
+                bytes = null;
+                return false;
+            }
+
+            bytes = new byte[hex.Length / 2];
+            try
+            {
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    string curByte = hex.Substring(i * 2, 2);
+                    bytes[i] = System.Convert.ToByte(curByte, 16);
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        static bool TryBytesToHex(byte[] bytes, out string hex)
+        {
+            if (bytes == null)
+            {
+                hex = null;
+                return false;
+            }
+
+            StringBuilder sb = new StringBuilder(bytes.Length * 2);
+            foreach (byte b in bytes)
+                sb.Append($"{b:X2}");
+            hex = sb.ToString();
+            return true;
+        }
+
+        public override byte[] Convert(string argu)
+        {
+            if (TryHexToBytes(argu, out byte[] bytes))
+                return bytes;
+
+            throw new ArgumentException(null, nameof(argu));
+        }
+
+        public override string ConvertBack(byte[] obj)
+        {
+            if (TryBytesToHex(obj, out string hex))
+                return hex;
+
+            throw new ArgumentException(null, nameof(obj));
+        }
+
+        public override bool TryConvert(string argu, out byte[] result)
+        {
+            return TryHexToBytes(argu, out result);
+        }
+
+        public override bool TryConvertBack(byte[] obj, out string result)
+        {
+            return TryBytesToHex(obj, out result);
+        }
     }
 }

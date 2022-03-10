@@ -25,13 +25,21 @@ namespace NullLib.CommandLine
             { typeof(char), typeof(CharArguConverter) },
             { typeof(string), typeof(ArguConverter) },
             { typeof(char[]), typeof(CharArrayArguConverter) },
+            { typeof(byte[]), typeof(HexBytesArguConverter) },
             { typeof(decimal), typeof(DecimalArguConverter) },
             { typeof(BigInteger), typeof(BigIntArguConverter) },
         };
 
+        public static List<Func<Type, Type>> ArguConverterPipeline { get; } = new List<Func<Type, Type>>()
+        {
+            GetArguConverterFromMap,
+            GetArguConverterForEnum,
+            GetArguConverterForArray,
+        };
+
         public static bool TryGetArguConverter(Type arguType, out Type arguConverter)
         {
-            foreach(Func<Type, Type> getter in ArguConverterPipline)
+            foreach(Func<Type, Type> getter in ArguConverterPipeline)
             {
                 arguConverter = getter(arguType);
                 if (arguConverter != null)
@@ -45,14 +53,14 @@ namespace NullLib.CommandLine
         public static Type GetArguConverter(Type arguType)
         {
             Type arguConverter = null;
-            foreach (Func<Type, Type> getter in ArguConverterPipline)
+            foreach (Func<Type, Type> getter in ArguConverterPipeline)
             {
                 arguConverter = getter(arguType);
                 if (arguConverter != null)
                     return arguConverter;
             }
 
-            throw new CommandArgumentConverterNotFoundException(arguType);
+            throw new CommandArguConverterNotFoundException(arguType);
         }
 
         /// <summary>
@@ -69,7 +77,7 @@ namespace NullLib.CommandLine
 
             return null;
         }
-        public static Type GetConverterForEnum(Type enumArguType)
+        public static Type GetArguConverterForEnum(Type enumArguType)
         {
             if (enumArguType.IsEnum)
             {
@@ -78,7 +86,7 @@ namespace NullLib.CommandLine
 
             return null;
         }
-        public static Type GetConverterForArray(Type arrayArguType)
+        public static Type GetArguConverterForArray(Type arrayArguType)
         {
             if (arrayArguType.IsArray)
             {
@@ -91,13 +99,6 @@ namespace NullLib.CommandLine
 
             return null;
         }
-
-        public static List<Func<Type, Type>> ArguConverterPipline { get; } = new List<Func<Type, Type>>()
-        {
-            GetArguConverterFromMap,
-            GetConverterForEnum,
-            GetConverterForArray,
-        };
 
 
         #region PreProcess
@@ -416,16 +417,18 @@ namespace NullLib.CommandLine
         }
         public static object Invoke(MethodInfo[] methods, CommandAttribute[] attributes, CommandArguAttribute[][] paramInfos, object instance, string methodName, IArgument[] args, StringComparison stringComparison)
         {
+            bool matchNameMethodFound = false;
             for (int i = 0, end = methods.Length; i < end; i++)
             {
                 MethodInfo method = methods[i];
                 CommandAttribute cmdattr = attributes[i];
                 if (cmdattr.IsCorrectName(methodName, stringComparison))
                 {
+                    matchNameMethodFound = true;
                     CommandArguAttribute[] _paramInfos = paramInfos[i];
                     CommandAttribute attribute = attributes[i];
                     if (attribute == null)
-                        throw new ArgumentOutOfRangeException(nameof(method), "Specified method is not supported. Please add 'CommandOption' Attribute first.");
+                        throw new ArgumentOutOfRangeException(nameof(method), "Specified method is not supported. Please add 'Command' Attribute first.");
                     if (TryFormatArguments(_paramInfos, args, stringComparison, out var formatedArgs))
                     {
                         if (TryConvertArguments(_paramInfos, attribute.ArgumentConverters, ref formatedArgs, stringComparison))
@@ -436,6 +439,9 @@ namespace NullLib.CommandLine
                     }
                 }
             }
+
+            if (matchNameMethodFound)
+                throw new CommandOverrideNotFoundException(methodName);
 
             throw new CommandEntryPointNotFoundException(methodName);
         }

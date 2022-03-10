@@ -37,20 +37,6 @@ namespace TestConsole
     {
         static void Main(string[] args)
         {
-            var rootCmd = new RootCommand()
-            {
-                new Option<string>("--fuck-option"),
-            };
-
-            rootCmd.SetHandler<string>(NewMethod);
-
-            while (true)
-            {
-                CommandParser.SplitCommandLine(Console.ReadLine(), out var fuck);
-                rootCmd.Invoke(fuck.Select(v => v.Content).ToArray());
-            }
-
-
             CommandObject<MyCommands> obj = new();       // 创建一个命令行对象
             IArguParser[] parsers = new IArguParser[]
             {

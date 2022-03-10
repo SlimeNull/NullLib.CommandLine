@@ -14,7 +14,7 @@ namespace NullLib.CommandLine
     [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
     public sealed class CommandAttribute : Attribute
     {
-        bool autoSelectConverters;
+        private readonly bool autoSelectConverters;
         IArguConverter[] arguConverters;
 
         /// <summary>

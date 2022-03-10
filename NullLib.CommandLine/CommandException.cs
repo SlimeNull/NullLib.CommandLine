@@ -27,6 +27,14 @@ namespace NullLib.CommandLine
             MethodRequired = methodRequired;
         }
     }
+
+    public class CommandOverrideNotFoundException : CommandEntryPointNotFoundException
+    {
+        public CommandOverrideNotFoundException() : base() { }
+        public CommandOverrideNotFoundException(string methodRequired) : base(methodRequired) { }
+        public CommandOverrideNotFoundException(string methodRequired, string message) : base(methodRequired, message) { }
+    }
+
     public class CommandParameterFormatException : CommandException
     {
         public MethodInfo Method { get; }
@@ -77,12 +85,17 @@ namespace NullLib.CommandLine
             ArgumentIndex = arguIndex;
             argument = argu;
         }
+        public CommandArgumentAssignException(int arguIndex, IArgument argu, string message, Exception innerException) : base(message, innerException)
+        {
+            ArgumentIndex = arguIndex;
+            argument = argu;
+        }
     }
-    public class CommandArgumentConverterNotFoundException : CommandException
+    public class CommandArguConverterNotFoundException : CommandException
     {
         public Type ParameterType { get; }
 
-        public CommandArgumentConverterNotFoundException(Type parameterType) : base("Command argument converter not found.")
+        public CommandArguConverterNotFoundException(Type parameterType) : base("Command argument converter not found.")
         {
             ParameterType = parameterType;
         }
